@@ -873,11 +873,17 @@ function showDiceResult(result) {
 function animateWheel(result) {
   return new Promise(r=>{
     const el=document.getElementById('wheel-el');
-    // Segment midpoint angle (from top, clockwise): result*45 + 22.5
-    // To land pointer on segment, we rotate wheel backwards by that angle
-    const segMid = result * 45 + 22.5;
-    const landAngle = (360 - (segMid % 360)) % 360;
-    const totalSpin = 1800 + landAngle; // 5 full rotations + landing offset
+    // Map contract result → SVG segment index
+    // Contract: 0=Jackpot, 1=Win, 2=Win, 3-7=Lose
+    // SVG segments (clockwise from top, 45° each):
+    //   Seg 0=Jackpot, Seg 2=Win, Seg 6=Win, rest=Lose
+    const resultToSeg = { 0:0, 1:2, 2:6, 3:1, 4:3, 5:4, 6:5, 7:7 };
+    const seg = resultToSeg[result] ?? 1;
+    // Midpoint of seg in SVG space (SVG top = -90°, i.e. 270°)
+    const segMidSvg = (seg * 45 - 90 + 22.5 + 360) % 360;
+    // Rotate wheel so that segment midpoint lands under the top pointer
+    const landAngle = (360 - segMidSvg) % 360;
+    const totalSpin = 1800 + landAngle;
     el.style.setProperty('--spin-deg', totalSpin+'deg');
     el.classList.remove('spinning'); void el.offsetWidth; el.classList.add('spinning');
     setTimeout(r, 3200);
