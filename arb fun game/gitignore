@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Environment variables (keep your private keys safe!)
+.env
+.env.local
+.env.*
+
+# Hardhat generated files
+artifacts/
+cache/
+typechain/
+typechain-types/
+
+# Coverage
+coverage/
+coverage.json
+
+# Misc
+.DS_Store
