@@ -82,10 +82,10 @@ export const FUN_TOKEN_ABI = [
 //  Uniswap swap link (update outputCurrency after deploying FunToken)
 // ─────────────────────────────────────────────────────────────────────────────
 export const UNISWAP_SWAP_URL =
-  `https://app.uniswap.org/#/swap?chain=arbitrum-sepolia&outputCurrency=${FUN_TOKEN_ADDRESS}`;
+  `https://app.camelot.exchange/?chain=arbitrumSepolia&token2=${0x92E79A3f212f6BD696a2ddB3da374e7776B4daaC}`;
 
 export const UNISWAP_ADD_LIQUIDITY_URL =
-  `https://app.uniswap.org/#/add/ETH/${FUN_TOKEN_ADDRESS}?chain=arbitrum-sepolia`;
+  `https://app.camelot.exchange/liquidity?chain=arbitrumSepolia&token1=ETH&token2=${0x92E79A3f212f6BD696a2ddB3da374e7776B4daaC}`;
 
 // Game type enum — must match Solidity
 export enum GameType {

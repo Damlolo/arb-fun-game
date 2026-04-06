@@ -869,7 +869,7 @@ html, body {
       <div class="connect-card">
         <div class="connect-ico">🔐</div>
         <div class="connect-title">Connect your wallet</div>
-        <div class="connect-desc">Connect to play on-chain games, earn FUN tokens, and swap via Uniswap on Arbitrum Sepolia.</div>
+        <div class="connect-desc">Connect to play on-chain games, earn FUN tokens, and swap via Camelot on Arbitrum Sepolia.</div>
         <button class="connect-cta" onclick="handleConnect()">Connect wallet</button>
       </div>
     </div>
@@ -879,7 +879,7 @@ html, body {
 
       <div class="ph">
         <div class="ph-title">Games</div>
-        <div class="ph-sub">Fully on-chain · earn FUN tokens on every win · swap via Uniswap</div>
+        <div class="ph-sub">Fully on-chain · earn FUN tokens on every win · swap via Camelot</div>
       </div>
 
       <div class="stats">
@@ -1123,8 +1123,8 @@ const HUB_ADDR  = "0xF67dA5dE3b6c4D8675047eBf0DE71Dd9Ac96227C";
 const FUN_ADDR  = "0x92E79A3f212f6BD696a2ddB3da374e7776B4daaC";
 const CHAIN_ID  = 421614;
 
-const SWAP_URL  = `https://app.uniswap.org/#/swap?chain=arbitrum-sepolia&outputCurrency=${FUN_ADDR}`;
-const LP_URL    = `https://app.uniswap.org/#/add/ETH/${FUN_ADDR}?chain=arbitrum-sepolia`;
+const SWAP_URL  = `https://app.camelot.exchange/?chain=arbitrumSepolia&token2=${0x92E79A3f212f6BD696a2ddB3da374e7776B4daaC}`;
+const LP_URL    = `https://app.camelot.exchange/liquidity?chain=arbitrumSepolia&token1=ETH&token2=${0x92E79A3f212f6BD696a2ddB3da374e7776B4daaC}`;
 
 const HUB_ABI = [
   "function play(uint8 game, uint256 choice) external payable",
