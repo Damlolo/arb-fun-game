@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ARB Fun House</title>
+<title>HUBARB</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
@@ -241,15 +241,15 @@ html, body {
 .dice-3d.rolling { animation: diceRoll 1.4s cubic-bezier(.4,0,.2,1) forwards; }
 
 /* ── WHEEL ANIMATION ── */
-.wheel-container { position: relative; width: 120px; height: 120px; }
-.wheel-svg { width: 120px; height: 120px; }
+.wheel-container { position: relative; width: 220px; height: 220px; }
+.wheel-svg { width: 220px; height: 220px; }
 .wheel-pointer {
-  position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
   width: 0; height: 0;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-top: 16px solid var(--amber);
-  filter: drop-shadow(0 2px 4px rgba(251,191,36,0.5));
+  border-left: 13px solid transparent;
+  border-right: 13px solid transparent;
+  border-top: 28px solid var(--amber);
+  filter: drop-shadow(0 2px 6px rgba(251,191,36,0.5));
 }
 @keyframes wheelSpin {
   0%   { transform: rotate(0deg); }
@@ -341,7 +341,7 @@ html, body {
       <div class="brand-mark">
         <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
       </div>
-      <span class="brand-name">ARB Fun House</span>
+      <span class="brand-name">HUBARB</span>
       <span class="brand-chip">TESTNET</span>
     </div>
     <div class="topbar-r">
@@ -864,7 +864,11 @@ async function doPlay(gi) {
 
   try {
     setSt(gi, "Waiting for wallet…");
-    const tx = await hub.play(gi, ch, { value: wei });
+    // Spin Wheel (gi===2) uses a manual gasLimit to bypass ethers estimateGas,
+    // which can revert during simulation if house balance < max jackpot payout.
+    const txOpts = { value: wei };
+    if (gi === 2) txOpts.gasLimit = 200000n;
+    const tx = await hub.play(gi, ch, txOpts);
 
     // Transaction submitted — show confirming state and start animation
     setSt(gi, "Confirming on-chain…", true);
@@ -905,8 +909,8 @@ async function doPlay(gi) {
 
   } catch(e) {
     clearSt(gi);
-    let msg = e.reason || e.message || "Transaction failed";
-    if (msg.includes("insufficient house")) msg = "House balance too low — try again later.";
+    let msg = e.reason || e.shortMessage || e.message || "Transaction failed";
+    if (msg.includes("insufficient house") || msg.includes("CALL_EXCEPTION") || msg.includes("estimateGas")) msg = "House balance too low — try again later.";
     if (msg.includes("rejected")||msg.includes("denied")) msg = "Transaction rejected.";
     document.getElementById(`err-${gi}`).innerHTML = `<div class="err-line">${msg}</div>`;
   } finally {
