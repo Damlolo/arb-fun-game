@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ARB Fun House</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:            #0b0b0f;
+  --surface:       #111117;
+  --surface-2:     #17171f;
+  --surface-3:     #1e1e28;
+  --border:        rgba(255,255,255,0.06);
+  --border-md:     rgba(255,255,255,0.11);
+  --border-hi:     rgba(255,255,255,0.18);
+  --text-1:        #ededf2;
+  --text-2:        #8a8a9f;
+  --text-3:        #52526a;
+  --accent:        #6c63ff;
+  --accent-lt:     #8b85ff;
+  --accent-bg:     rgba(108,99,255,0.09);
+  --accent-bdr:    rgba(108,99,255,0.22);
+  --green:         #34d399;
+  --green-bg:      rgba(52,211,153,0.07);
+  --green-bdr:     rgba(52,211,153,0.18);
+  --red:           #f87171;
+  --red-bg:        rgba(248,113,113,0.07);
+  --red-bdr:       rgba(248,113,113,0.18);
+  --amber:         #fbbf24;
+  --amber-bg:      rgba(251,191,36,0.07);
+  --amber-bdr:     rgba(251,191,36,0.18);
+  --r:             10px;
+  --r-sm:          7px;
+  --r-lg:          14px;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── APP SHELL ───────────────────────────────────────── */
+.shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: 56px 1fr;
+  min-height: 100vh;
+}
+
+/* ── TOP BAR ─────────────────────────────────────────── */
+.topbar {
+  grid-column: 1/-1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky; top: 0; z-index: 10;
+}
+
+.brand { display: flex; align-items: center; gap: 9px; }
+
+.brand-mark {
+  width: 28px; height: 28px;
+  background: var(--accent);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.brand-mark svg { width: 14px; height: 14px; fill: none; stroke: #fff; stroke-width: 2; }
+
+.brand-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+  letter-spacing: -0.2px;
+}
+
+.brand-chip {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--accent-lt);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-bdr);
+  border-radius: 100px;
+  padding: 2px 7px;
+  letter-spacing: 0.3px;
+}
+
+.topbar-r { display: flex; align-items: center; gap: 8px; }
+
+.net-chip {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  color: var(--text-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 5px 11px;
+}
+
+.net-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text-3);
+  transition: all .3s;
+}
+
+.net-dot.live { background: var(--green); box-shadow: 0 0 5px var(--green); }
+
+.wallet-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 7px 15px;
+  cursor: pointer;
+  transition: opacity .14s;
+}
+.wallet-btn:hover { opacity: 0.85; }
+.wallet-btn.connected {
+  background: var(--surface-3);
+  border: 1px solid var(--border-md);
+  color: var(--text-1);
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+}
+
+/* ── SIDEBAR ─────────────────────────────────────────── */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+
+.nav-section {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-3);
+  padding: 10px 10px 5px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-2);
+  border: 1px solid transparent;
+  transition: all .13s;
+  user-select: none;
+}
+
+.nav-item:hover { color: var(--text-1); background: var(--surface-2); }
+
+.nav-item.active {
+  color: var(--text-1);
+  background: var(--surface-3);
+  border-color: var(--border);
+  font-weight: 500;
+}
+
+.nav-ico {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.nav-item.active .nav-ico { background: var(--accent-bg); }
+
+.nav-badge {
+  margin-left: auto;
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  color: var(--text-3);
+  background: var(--surface-3);
+  border-radius: 100px;
+  padding: 2px 6px;
+}
+
+/* ── SIDEBAR FOOTER ──────────────────────────────────── */
+.s-footer {
+  margin-top: auto;
+  padding: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+}
+
+.s-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-3);
+  margin-bottom: 6px;
+}
+
+.s-balance {
+  font-size: 20px;
+  font-weight: 600;
+  font-family: 'DM Mono', monospace;
+  color: var(--text-1);
+  letter-spacing: -0.5px;
+}
+
+.s-balance small {
+  font-size: 12px;
+  color: var(--text-2);
+  font-weight: 400;
+  margin-left: 3px;
+}
+
+.s-actions { display: flex; gap: 5px; margin-top: 10px; }
+
+.s-btn {
+  flex: 1;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 7px 0;
+  border-radius: var(--r-sm);
+  border: 1px solid;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  transition: opacity .14s, border-color .14s, color .14s;
+}
+
+.s-btn-p { background: var(--accent); border-color: var(--accent); color: #fff; }
+.s-btn-p:hover { opacity: 0.85; }
+.s-btn-s { background: transparent; border-color: var(--border-md); color: var(--text-2); }
+.s-btn-s:hover { color: var(--text-1); border-color: var(--border-hi); }
+
+/* ── MAIN ────────────────────────────────────────────── */
+.main {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+/* ── CONNECT STATE ───────────────────────────────────── */
+.connect-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 56px);
+}
+
+.connect-card {
+  width: 340px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 32px;
+  text-align: center;
+}
+
+.connect-ico {
+  width: 48px; height: 48px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-bdr);
+  border-radius: var(--r);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  margin: 0 auto 16px;
+}
+
+.connect-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-1);
+  letter-spacing: -0.3px;
+  margin-bottom: 8px;
+}
+
+.connect-desc {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.connect-cta {
+  width: 100%;
+  padding: 11px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--r-sm);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .14s;
+}
+.connect-cta:hover { opacity: 0.86; }
+
+/* ── PAGE HEADER ─────────────────────────────────────── */
+.ph { margin-bottom: 20px; }
+.ph-title { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; color: var(--text-1); }
+.ph-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+
+/* ── STAT STRIP ──────────────────────────────────────── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 16px;
+}
+
+.stat-lbl {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-3);
+  margin-bottom: 5px;
+}
+
+.stat-val {
+  font-size: 18px;
+  font-weight: 600;
+  font-family: 'DM Mono', monospace;
+  color: var(--text-1);
+  letter-spacing: -0.4px;
+}
+
+.stat-val.c-green { color: var(--green); }
+.stat-val.c-amber { color: var(--amber); }
+
+/* ── GAME CARD ───────────────────────────────────────── */
+.gc {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  margin-bottom: 12px;
+  transition: border-color .15s;
+}
+
+.gc:hover { border-color: var(--border-md); }
+
+.gc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 18px;
+  cursor: pointer;
+  transition: background .13s;
+}
+
+.gc-head:hover { background: var(--surface-2); }
+
+.gc-hl { display: flex; align-items: center; gap: 12px; }
+
+.gc-ico {
+  width: 38px; height: 38px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-md);
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.gc-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+  letter-spacing: -0.2px;
+}
+
+.gc-sub { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+
+.gc-tags { display: flex; gap: 5px; align-items: center; }
+
+.tag {
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  border-radius: 100px;
+  padding: 3px 9px;
+  border: 1px solid;
+}
+
+.tag-g { color: var(--green); border-color: var(--green-bdr); background: var(--green-bg); }
+.tag-b { color: #7ba8f5; border-color: rgba(123,168,245,0.18); background: rgba(123,168,245,0.05); }
+.tag-a { color: var(--amber); border-color: var(--amber-bdr); background: var(--amber-bg); }
+
+.caret {
+  width: 18px; height: 18px;
+  flex-shrink: 0;
+  color: var(--text-3);
+  transition: transform .2s;
+}
+
+.gc.open .caret { transform: rotate(180deg); }
+
+/* ── GAME BODY ───────────────────────────────────────── */
+.gc-body {
+  display: none;
+  padding: 0 18px 18px;
+}
+
+.gc.open .gc-body { display: block; }
+
+.gc-inner {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 18px;
+}
+
+/* ── VISUAL ──────────────────────────────────────────── */
+.vis {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  height: 110px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 42px;
+  margin-bottom: 16px;
+}
+
+/* ── FIELD ───────────────────────────────────────────── */
+.fl { margin-bottom: 14px; }
+
+.fl-lbl {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-3);
+  margin-bottom: 7px;
+}
+
+.choice-row { display: flex; gap: 5px; flex-wrap: wrap; }
+
+.ch {
+  padding: 7px 11px;
+  min-width: 40px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-2);
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all .13s;
+  text-align: center;
+}
+
+.ch:hover { border-color: var(--border-md); color: var(--text-1); }
+.ch.on {
+  background: var(--accent-bg);
+  border-color: var(--accent-bdr);
+  color: var(--accent-lt);
+  font-weight: 500;
+}
+
+/* ── PROB BAR ────────────────────────────────────────── */
+.pbar-track {
+  height: 4px;
+  background: var(--surface-3);
+  border-radius: 100px;
+  overflow: hidden;
+  margin: 6px 0 4px;
+}
+
+.pbar-fill {
+  height: 100%;
+  border-radius: 100px;
+  background: var(--accent);
+}
+
+.pbar-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-3);
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── BET PANEL ───────────────────────────────────────── */
+.bet-panel {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bet-field-lbl {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-3);
+  margin-bottom: 6px;
+}
+
+.bet-wrap {
+  display: flex;
+  align-items: center;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  transition: border-color .13s;
+}
+
+.bet-wrap:focus-within { border-color: var(--accent-bdr); }
+
+.bet-curr {
+  padding: 0 11px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text-3);
+  border-right: 1px solid var(--border);
+  height: 36px;
+  display: flex; align-items: center;
+  white-space: nowrap;
+}
+
+.bet-in {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-1);
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  padding: 0 11px;
+  height: 36px;
+}
+
+.qbets { display: flex; gap: 4px; }
+
+.qb {
+  flex: 1;
+  padding: 5px 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-3);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all .13s;
+  text-align: center;
+}
+
+.qb:hover { color: var(--text-1); border-color: var(--border-md); }
+
+.payout-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0;
+  border-top: 1px solid var(--border);
+}
+
+.payout-lbl { font-size: 12px; color: var(--text-3); }
+.payout-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--green);
+  font-weight: 500;
+}
+
+.play-btn {
+  width: 100%;
+  padding: 11px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--r-sm);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .13s, transform .1s;
+  letter-spacing: -0.1px;
+}
+
+.play-btn:hover:not(:disabled) { opacity: 0.86; }
+.play-btn:active:not(:disabled) { transform: scale(0.98); }
+.play-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ── RESULT BANNER ───────────────────────────────────── */
+.result-banner {
+  margin-top: 12px;
+  border-radius: var(--r);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid;
+  animation: fadeUp .25s ease-out;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(-5px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.result-banner.win  { background: var(--green-bg);  border-color: var(--green-bdr); }
+.result-banner.lose { background: var(--red-bg);    border-color: var(--red-bdr);   }
+
+.r-ico {
+  width: 32px; height: 32px;
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+
+.result-banner.win  .r-ico { background: rgba(52,211,153,0.1); }
+.result-banner.lose .r-ico { background: rgba(248,113,113,0.1); }
+
+.r-body { flex: 1; }
+
+.r-head {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
+.result-banner.win  .r-head { color: var(--green); }
+.result-banner.lose .r-head { color: var(--red);   }
+
+.r-detail {
+  font-size: 11px;
+  color: var(--text-2);
+  font-family: 'DM Mono', monospace;
+  margin-top: 2px;
+}
+
+.swap-cta {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 13px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--r-sm);
+  color: #fff;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity .13s;
+}
+.swap-cta:hover { opacity: 0.84; }
+
+/* ── STATUS / ERROR ──────────────────────────────────── */
+.status-line {
+  display: flex; align-items: center; gap: 7px;
+  padding: 9px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  color: var(--text-2);
+  margin-top: 10px;
+  animation: fadeUp .2s ease-out;
+}
+
+.spin {
+  width: 13px; height: 13px;
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.err-line {
+  padding: 9px 12px;
+  background: var(--red-bg);
+  border: 1px solid var(--red-bdr);
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  color: var(--red);
+  margin-top: 10px;
+  animation: fadeUp .2s ease-out;
+}
+
+/* ── NET WARNING ─────────────────────────────────────── */
+.net-warn-bar {
+  display: none;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 20px;
+  background: var(--amber-bg);
+  border-bottom: 1px solid var(--amber-bdr);
+  font-size: 12px;
+  color: var(--amber);
+  grid-column: 1/-1;
+}
+
+/* ── HISTORY ─────────────────────────────────────────── */
+.hist-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.hist-head {
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  letter-spacing: -0.1px;
+}
+
+.hist-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.hist-tbl th {
+  text-align: left;
+  padding: 9px 18px;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.hist-tbl td {
+  padding: 10px 18px;
+  color: var(--text-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.hist-tbl tr:last-child td { border-bottom: none; }
+.hist-tbl tr:hover td { background: var(--surface-2); }
+.hist-tbl td.mono { font-family: 'DM Mono', monospace; font-size: 12px; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid;
+}
+
+.badge-win  { background: var(--green-bg);  color: var(--green);  border-color: var(--green-bdr);  }
+.badge-lose { background: var(--red-bg);    color: var(--red);    border-color: var(--red-bdr);    }
+
+/* ── RESPONSIVE ──────────────────────────────────────── */
+@media (max-width: 760px) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .gc-inner { grid-template-columns: 1fr; }
+  .main { padding: 16px; }
+  .gc-tags { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ── TOPBAR ───────────────────────────────────────── -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <span class="brand-name">ARB Fun House</span>
+      <span class="brand-chip">TESTNET</span>
+    </div>
+    <div class="topbar-r">
+      <div class="net-chip">
+        <div class="net-dot" id="net-dot"></div>
+        <span>Arbitrum Sepolia</span>
+      </div>
+      <button class="wallet-btn" id="connect-btn" onclick="handleConnect()">Connect wallet</button>
+    </div>
+  </div>
+
+  <!-- ── NET WARNING ──────────────────────────────────── -->
+  <div class="net-warn-bar" id="net-warn">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Switch to Arbitrum Sepolia (chain ID 421614) to play
+  </div>
+
+  <!-- ── SIDEBAR ──────────────────────────────────────── -->
+  <div class="sidebar">
+    <div class="nav-section">Games</div>
+    <div class="nav-item" onclick="openGame(0)">
+      <div class="nav-ico">🪙</div>Coin Flip
+      <span class="nav-badge">1.9×</span>
+    </div>
+    <div class="nav-item" onclick="openGame(1)">
+      <div class="nav-ico">🎲</div>Dice Roll
+      <span class="nav-badge">5.7×</span>
+    </div>
+    <div class="nav-item" onclick="openGame(2)">
+      <div class="nav-ico">🎡</div>Spin Wheel
+      <span class="nav-badge">4.75×</span>
+    </div>
+
+    <div class="nav-section" style="margin-top:8px">Rewards</div>
+    <div class="nav-item" onclick="document.getElementById('hist-card')?.scrollIntoView({behavior:'smooth'})">
+      <div class="nav-ico">📊</div>History
+    </div>
+
+    <div class="s-footer">
+      <div class="s-label">FUN balance</div>
+      <div class="s-balance" id="s-bal">0.00<small>FUN</small></div>
+      <div class="s-actions">
+        <a href="#" id="swap-link" target="_blank" class="s-btn s-btn-p">Swap</a>
+        <a href="#" id="lp-link" target="_blank" class="s-btn s-btn-s">Add LP</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAIN ─────────────────────────────────────────── -->
+  <div class="main">
+
+    <!-- NOT CONNECTED -->
+    <div class="connect-state" id="no-wallet">
+      <div class="connect-card">
+        <div class="connect-ico">🔐</div>
+        <div class="connect-title">Connect your wallet</div>
+        <div class="connect-desc">Connect to play on-chain games, earn FUN tokens, and swap via Uniswap on Arbitrum Sepolia.</div>
+        <button class="connect-cta" onclick="handleConnect()">Connect wallet</button>
+      </div>
+    </div>
+
+    <!-- CONNECTED -->
+    <div id="game-view" style="display:none">
+
+      <div class="ph">
+        <div class="ph-title">Games</div>
+        <div class="ph-sub">Fully on-chain · earn FUN tokens on every win · swap via Uniswap</div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-lbl">FUN earned</div>
+          <div class="stat-val c-amber" id="s-fun">0.00</div>
+        </div>
+        <div class="stat">
+          <div class="stat-lbl">Games played</div>
+          <div class="stat-val" id="s-played">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-lbl">Win rate</div>
+          <div class="stat-val c-green" id="s-wr">—</div>
+        </div>
+      </div>
+
+      <!-- ── COIN FLIP ────────────────────────────────── -->
+      <div class="gc open" id="gc-0">
+        <div class="gc-head" onclick="toggleGc(0)">
+          <div class="gc-hl">
+            <div class="gc-ico">🪙</div>
+            <div>
+              <div class="gc-name">Coin Flip</div>
+              <div class="gc-sub">Heads or tails · 50% chance to win</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:7px">
+            <div class="gc-tags">
+              <span class="tag tag-g">1.9× payout</span>
+              <span class="tag tag-b">50% odds</span>
+            </div>
+            <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div class="gc-body">
+          <div class="gc-inner">
+            <div>
+              <div class="vis" id="vis-0">🪙</div>
+              <div class="fl">
+                <div class="fl-lbl">Your pick</div>
+                <div class="choice-row">
+                  <button class="ch on" id="c0-0" onclick="pickCoin(0)">Heads</button>
+                  <button class="ch" id="c0-1" onclick="pickCoin(1)">Tails</button>
+                </div>
+              </div>
+              <div class="fl">
+                <div class="fl-lbl">Win probability</div>
+                <div class="pbar-track"><div class="pbar-fill" style="width:50%"></div></div>
+                <div class="pbar-meta"><span>0%</span><span>50%</span><span>100%</span></div>
+              </div>
+              <div id="st-0"></div>
+              <div id="res-0"></div>
+              <div id="err-0"></div>
+            </div>
+            <div>
+              <div class="bet-panel">
+                <div>
+                  <div class="bet-field-lbl">Bet amount</div>
+                  <div class="bet-wrap">
+                    <div class="bet-curr">ETH</div>
+                    <input class="bet-in" type="number" id="bet-0" value="0.001" min="0.0001" max="0.1" step="0.0001" oninput="updPayout(0)" />
+                  </div>
+                </div>
+                <div>
+                  <div class="bet-field-lbl">Quick bet</div>
+                  <div class="qbets">
+                    <button class="qb" onclick="qbet(0,'0.0001')">0.0001</button>
+                    <button class="qb" onclick="qbet(0,'0.001')">0.001</button>
+                    <button class="qb" onclick="qbet(0,'0.01')">0.01</button>
+                    <button class="qb" onclick="qbet(0,'0.05')">0.05</button>
+                  </div>
+                </div>
+                <div class="payout-row">
+                  <span class="payout-lbl">Potential payout</span>
+                  <span class="payout-val" id="po-0">0.0019 ETH</span>
+                </div>
+                <button class="play-btn" id="pb-0" onclick="doPlay(0)">Flip coin</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DICE ROLL ────────────────────────────────── -->
+      <div class="gc" id="gc-1">
+        <div class="gc-head" onclick="toggleGc(1)">
+          <div class="gc-hl">
+            <div class="gc-ico">🎲</div>
+            <div>
+              <div class="gc-name">Dice Roll</div>
+              <div class="gc-sub">Pick 1–6 · ~16.7% chance to win</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:7px">
+            <div class="gc-tags">
+              <span class="tag tag-g">5.7× payout</span>
+              <span class="tag tag-b">16.7% odds</span>
+            </div>
+            <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div class="gc-body">
+          <div class="gc-inner">
+            <div>
+              <div class="vis" id="vis-1">🎲</div>
+              <div class="fl">
+                <div class="fl-lbl">Your number</div>
+                <div class="choice-row" id="dice-row">
+                  <button class="ch" onclick="pickDice(1)">1</button>
+                  <button class="ch" onclick="pickDice(2)">2</button>
+                  <button class="ch" onclick="pickDice(3)">3</button>
+                  <button class="ch" onclick="pickDice(4)">4</button>
+                  <button class="ch" onclick="pickDice(5)">5</button>
+                  <button class="ch on" onclick="pickDice(6)">6</button>
+                </div>
+              </div>
+              <div class="fl">
+                <div class="fl-lbl">Win probability</div>
+                <div class="pbar-track"><div class="pbar-fill" style="width:16.7%"></div></div>
+                <div class="pbar-meta"><span>0%</span><span>16.7%</span><span>100%</span></div>
+              </div>
+              <div id="st-1"></div>
+              <div id="res-1"></div>
+              <div id="err-1"></div>
+            </div>
+            <div>
+              <div class="bet-panel">
+                <div>
+                  <div class="bet-field-lbl">Bet amount</div>
+                  <div class="bet-wrap">
+                    <div class="bet-curr">ETH</div>
+                    <input class="bet-in" type="number" id="bet-1" value="0.001" min="0.0001" max="0.1" step="0.0001" oninput="updPayout(1)" />
+                  </div>
+                </div>
+                <div>
+                  <div class="bet-field-lbl">Quick bet</div>
+                  <div class="qbets">
+                    <button class="qb" onclick="qbet(1,'0.0001')">0.0001</button>
+                    <button class="qb" onclick="qbet(1,'0.001')">0.001</button>
+                    <button class="qb" onclick="qbet(1,'0.01')">0.01</button>
+                    <button class="qb" onclick="qbet(1,'0.05')">0.05</button>
+                  </div>
+                </div>
+                <div class="payout-row">
+                  <span class="payout-lbl">Potential payout</span>
+                  <span class="payout-val" id="po-1">0.0057 ETH</span>
+                </div>
+                <button class="play-btn" id="pb-1" onclick="doPlay(1)">Roll dice</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SPIN WHEEL ───────────────────────────────── -->
+      <div class="gc" id="gc-2">
+        <div class="gc-head" onclick="toggleGc(2)">
+          <div class="gc-hl">
+            <div class="gc-ico">🎡</div>
+            <div>
+              <div class="gc-name">Spin Wheel</div>
+              <div class="gc-sub">Pure chance · jackpot 1-in-8</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:7px">
+            <div class="gc-tags">
+              <span class="tag tag-a">4.75× jackpot</span>
+              <span class="tag tag-g">1.9× win</span>
+            </div>
+            <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div class="gc-body">
+          <div class="gc-inner">
+            <div>
+              <div class="vis" id="vis-2">🎡</div>
+              <div class="fl">
+                <div class="fl-lbl">Outcome distribution</div>
+                <div class="choice-row" style="margin-top:2px">
+                  <span class="tag tag-a">Jackpot 4.75× · 12.5%</span>
+                  <span class="tag tag-g">Win 1.9× · 25%</span>
+                  <span class="tag" style="color:var(--text-3);border-color:var(--border)">Lose · 62.5%</span>
+                </div>
+                <div style="font-size:12px;color:var(--text-3);margin-top:10px">No choice required. Place your bet and spin.</div>
+              </div>
+              <div id="st-2"></div>
+              <div id="res-2"></div>
+              <div id="err-2"></div>
+            </div>
+            <div>
+              <div class="bet-panel">
+                <div>
+                  <div class="bet-field-lbl">Bet amount</div>
+                  <div class="bet-wrap">
+                    <div class="bet-curr">ETH</div>
+                    <input class="bet-in" type="number" id="bet-2" value="0.001" min="0.0001" max="0.1" step="0.0001" oninput="updPayout(2)" />
+                  </div>
+                </div>
+                <div>
+                  <div class="bet-field-lbl">Quick bet</div>
+                  <div class="qbets">
+                    <button class="qb" onclick="qbet(2,'0.0001')">0.0001</button>
+                    <button class="qb" onclick="qbet(2,'0.001')">0.001</button>
+                    <button class="qb" onclick="qbet(2,'0.01')">0.01</button>
+                    <button class="qb" onclick="qbet(2,'0.05')">0.05</button>
+                  </div>
+                </div>
+                <div class="payout-row">
+                  <span class="payout-lbl">Jackpot payout</span>
+                  <span class="payout-val" id="po-2">0.00475 ETH</span>
+                </div>
+                <button class="play-btn" id="pb-2" onclick="doPlay(2)">Spin wheel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── HISTORY ────────────────────────────────────── -->
+      <div class="hist-card" id="hist-card" style="display:none">
+        <div class="hist-head">Play history</div>
+        <table class="hist-tbl">
+          <thead>
+            <tr>
+              <th>Game</th><th>Pick</th><th>Result</th>
+              <th>Payout</th><th>FUN</th><th>Outcome</th>
+            </tr>
+          </thead>
+          <tbody id="hist-body"></tbody>
+        </table>
+      </div>
+
+    </div><!-- /game-view -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.9.0/ethers.umd.min.js"></script>
+<script>
+const HUB_ADDR  = "0xYOUR_GAMEHUB_ADDRESS_HERE";
+const FUN_ADDR  = "0xYOUR_FUNTOKEN_ADDRESS_HERE";
+const CHAIN_ID  = 421614;
+
+const SWAP_URL  = `https://app.uniswap.org/#/swap?chain=arbitrum-sepolia&outputCurrency=${FUN_ADDR}`;
+const LP_URL    = `https://app.uniswap.org/#/add/ETH/${FUN_ADDR}?chain=arbitrum-sepolia`;
+
+const HUB_ABI = [
+  "function play(uint8 game, uint256 choice) external payable",
+  "event GamePlayed(address indexed player, uint8 indexed game, uint256 choice, uint256 result, bool won, uint256 payout, uint256 funRewarded)",
+];
+const FUN_ABI = ["function balanceOf(address) view returns (uint256)"];
+
+const MULT = [1.9, 5.7, 4.75];
+const GNAMES = ["Coin Flip","Dice Roll","Spin Wheel"];
+const DICE_E = ["","⚀","⚁","⚂","⚃","⚄","⚅"];
+
+let provider, signer, hub, fun;
+let connected = false;
+let coinPick = 0, dicePick = 6;
+let hist = [], plays = 0, wins = 0;
+let animTick = {};
+
+// card toggle
+function toggleGc(i) { document.getElementById(`gc-${i}`).classList.toggle('open'); }
+function openGame(i) {
+  const c = document.getElementById(`gc-${i}`);
+  if (!c.classList.contains('open')) c.classList.add('open');
+  c.scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+// payout preview
+function updPayout(i) {
+  const v = parseFloat(document.getElementById(`bet-${i}`).value) || 0;
+  document.getElementById(`po-${i}`).textContent = (v * MULT[i]).toFixed(6) + ' ETH';
+}
+function qbet(i, v) { document.getElementById(`bet-${i}`).value = v; updPayout(i); }
+
+// choices
+function pickCoin(v) {
+  coinPick = v;
+  document.getElementById('c0-0').className = v===0 ? 'ch on' : 'ch';
+  document.getElementById('c0-1').className = v===1 ? 'ch on' : 'ch';
+}
+
+function pickDice(v) {
+  dicePick = v;
+  document.querySelectorAll('#dice-row .ch').forEach((b,i) => {
+    b.className = (i+1===v) ? 'ch on' : 'ch';
+  });
+}
+
+// wallet
+async function handleConnect() {
+  if (!window.ethereum) { alert("Install MetaMask to play."); return; }
+  if (!connected) await doConnect();
+}
+
+async function doConnect() {
+  try {
+    provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts",[]);
+    signer = await provider.getSigner();
+    const addr = await signer.getAddress();
+    const net  = await provider.getNetwork();
+    connected  = true;
+
+    const btn = document.getElementById('connect-btn');
+    btn.textContent = addr.slice(0,6)+'…'+addr.slice(-4);
+    btn.classList.add('connected');
+    document.getElementById('net-dot').classList.add('live');
+    document.getElementById('no-wallet').style.display = 'none';
+    document.getElementById('game-view').style.display = '';
+
+    if (Number(net.chainId) !== CHAIN_ID) {
+      document.getElementById('net-warn').style.display = 'flex';
+      try { await window.ethereum.request({ method:'wallet_switchEthereumChain', params:[{chainId:'0x'+CHAIN_ID.toString(16)}] }); } catch(_){}
+    }
+
+    hub = new ethers.Contract(HUB_ADDR, HUB_ABI, signer);
+    fun = new ethers.Contract(FUN_ADDR, FUN_ABI, provider);
+    document.getElementById('swap-link').href = SWAP_URL;
+    document.getElementById('lp-link').href   = LP_URL;
+
+    await refreshFun();
+    setInterval(refreshFun, 14000);
+    window.ethereum.on('chainChanged', ()=>location.reload());
+    window.ethereum.on('accountsChanged', ()=>location.reload());
+  } catch(e) { alert("Connection error: "+e.message); }
+}
+
+async function refreshFun() {
+  if (!fun||!signer) return;
+  try {
+    const bal = await fun.balanceOf(await signer.getAddress());
+    const fmt = parseFloat(ethers.formatEther(bal)).toFixed(2);
+    document.getElementById('s-fun').textContent = fmt;
+    document.getElementById('s-bal').innerHTML   = `${fmt}<small>FUN</small>`;
+  } catch(_){}
+}
+
+// play
+async function doPlay(gi) {
+  if (!connected) { alert("Connect wallet first."); return; }
+  const bet = document.getElementById(`bet-${gi}`).value;
+  const wei = ethers.parseEther(bet);
+  const ch  = gi===0 ? coinPick : gi===1 ? dicePick : 0;
+
+  ['st','res','err'].forEach(p => { document.getElementById(`${p}-${gi}`).innerHTML=''; });
+  const btn = document.getElementById(`pb-${gi}`);
+  btn.disabled = true;
+
+  try {
+    setSt(gi, "Waiting for wallet…");
+    const tx = await hub.play(gi, ch, { value: wei });
+    setSt(gi, "Confirming on-chain…", true);
+    startAnim(gi);
+    const rx = await tx.wait();
+
+    let out = { won:false, result:0, payout:0n, funRewarded:0n };
+    const iface = new ethers.Interface(HUB_ABI);
+    for (const log of rx.logs) {
+      try {
+        const p = iface.parseLog(log);
+        if (p?.name==="GamePlayed") {
+          out = { won:p.args.won, result:Number(p.args.result), payout:p.args.payout, funRewarded:p.args.funRewarded };
+        }
+      } catch(_){}
+    }
+
+    resolveAnim(gi, out.result);
+    clearSt(gi);
+    showRes(gi, out, bet, ch);
+    updStats(out.won);
+    addHist(gi, ch, out);
+    await refreshFun();
+  } catch(e) {
+    clearSt(gi);
+    let msg = e.reason || e.message || "Transaction failed";
+    if (msg.includes("insufficient house")) msg = "House balance too low — try again later.";
+    if (msg.includes("rejected")||msg.includes("denied")) msg = "Transaction rejected.";
+    document.getElementById(`err-${gi}`).innerHTML = `<div class="err-line">${msg}</div>`;
+  } finally { btn.disabled = false; }
+}
+
+function setSt(i,msg,spin=false) {
+  document.getElementById(`st-${i}`).innerHTML = `
+    <div class="status-line">
+      ${spin?'<div class="spin"></div>':'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'}
+      ${msg}
+    </div>`;
+}
+function clearSt(i) { document.getElementById(`st-${i}`).innerHTML = ''; }
+
+function startAnim(i) {
+  const el = document.getElementById(`vis-${i}`);
+  const frames = i===0?['🪙','🌕','🌑']:i===1?['⚀','⚁','⚂','⚃','⚄','⚅']:['🎡'];
+  let t=0;
+  animTick[i] = setInterval(()=>{ el.textContent = frames[t++ % frames.length]; }, 160);
+}
+
+function resolveAnim(i, result) {
+  clearInterval(animTick[i]);
+  const el = document.getElementById(`vis-${i}`);
+  if (i===0) el.textContent = result===0?'🌕':'🌑';
+  else if (i===1) el.textContent = DICE_E[result]||'🎲';
+  else el.textContent = result===0?'🏆':result<3?'✨':'💨';
+}
+
+function showRes(gi, {won,result,payout,funRewarded}, bet, ch) {
+  const pFmt = parseFloat(ethers.formatEther(payout)).toFixed(6);
+  const fFmt = parseFloat(ethers.formatEther(funRewarded)).toFixed(2);
+  const chL  = gi===0?(ch===0?'Heads':'Tails'):gi===1?`${ch}`:'—';
+  const rL   = gi===0?(result===0?'Heads':'Tails'):gi===1?`${result}`:result===0?'Jackpot':result<3?'Win':'No win';
+  const swp  = won&&funRewarded>0n?`<a href="${SWAP_URL}" target="_blank" class="swap-cta">Swap FUN</a>`:'';
+
+  document.getElementById(`res-${gi}`).innerHTML = `
+    <div class="result-banner ${won?'win':'lose'}">
+      <div class="r-ico">${won?'✅':'❌'}</div>
+      <div class="r-body">
+        <div class="r-head">${won?'You won':'You lost'}</div>
+        <div class="r-detail">Rolled ${rL} · picked ${chL}${won?` · +${pFmt} ETH`:''}${won&&funRewarded>0n?` · +${fFmt} FUN`:''}</div>
+      </div>
+      ${swp}
+    </div>`;
+}
+
+function updStats(won) {
+  plays++; if (won) wins++;
+  document.getElementById('s-played').textContent = plays;
+  document.getElementById('s-wr').textContent = plays>0?((wins/plays*100).toFixed(0)+'%'):'—';
+}
+
+function addHist(gi, ch, {won,result,payout,funRewarded}) {
+  const pFmt = parseFloat(ethers.formatEther(payout)).toFixed(6);
+  const fFmt = parseFloat(ethers.formatEther(funRewarded)).toFixed(2);
+  const chL  = gi===0?(ch===0?'Heads':'Tails'):gi===1?`${ch}`:'—';
+  const rL   = gi===0?(result===0?'Heads':'Tails'):gi===1?`${result}`:result===0?'Jackpot':result<3?'Win':'No win';
+  hist.unshift({gi,chL,rL,won,pFmt,fFmt});
+  if (hist.length>20) hist.pop();
+  const card = document.getElementById('hist-card');
+  card.style.display='';
+  document.getElementById('hist-body').innerHTML = hist.map(h=>`
+    <tr>
+      <td>${GNAMES[h.gi]}</td>
+      <td class="mono">${h.chL}</td>
+      <td class="mono">${h.rL}</td>
+      <td class="mono">${h.won?`+${h.pFmt} ETH`:'—'}</td>
+      <td class="mono">${h.won&&h.fFmt!=='0.00'?`+${h.fFmt} FUN`:'—'}</td>
+      <td><span class="badge ${h.won?'badge-win':'badge-lose'}">${h.won?'Win':'Lose'}</span></td>
+    </tr>`).join('');
+}
+</script>
+</body>
+</html>
