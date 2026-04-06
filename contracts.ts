@@ -1,8 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  Contract addresses — update these after deployment
 // ─────────────────────────────────────────────────────────────────────────────
-export const GAME_HUB_ADDRESS = "0xYOUR_GAMEHUB_ADDRESS_HERE";
-export const FUN_TOKEN_ADDRESS = "0xYOUR_FUNTOKEN_ADDRESS_HERE";
+export const GAME_HUB_ADDRESS = "0xF67dA5dE3b6c4D8675047eBf0DE71Dd9Ac96227C";
+export const FUN_TOKEN_ADDRESS = "0x92E79A3f212f6BD696a2ddB3da374e7776B4daaC";
 
 export const ARBITRUM_SEPOLIA_CHAIN_ID = 421614;
 
