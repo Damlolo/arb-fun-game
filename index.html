@@ -8,347 +8,236 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 :root {
-  --bg:            #0b0b0f;
-  --surface:       #111117;
-  --surface-2:     #17171f;
-  --surface-3:     #1e1e28;
-  --border:        rgba(255,255,255,0.06);
-  --border-md:     rgba(255,255,255,0.11);
-  --border-hi:     rgba(255,255,255,0.18);
-  --text-1:        #ededf2;
-  --text-2:        #8a8a9f;
-  --text-3:        #52526a;
-  --accent:        #6c63ff;
-  --accent-lt:     #8b85ff;
-  --accent-bg:     rgba(108,99,255,0.09);
-  --accent-bdr:    rgba(108,99,255,0.22);
-  --green:         #34d399;
-  --green-bg:      rgba(52,211,153,0.07);
-  --green-bdr:     rgba(52,211,153,0.18);
-  --red:           #f87171;
-  --red-bg:        rgba(248,113,113,0.07);
-  --red-bdr:       rgba(248,113,113,0.18);
-  --amber:         #fbbf24;
-  --amber-bg:      rgba(251,191,36,0.07);
-  --amber-bdr:     rgba(251,191,36,0.18);
-  --r:             10px;
-  --r-sm:          7px;
-  --r-lg:          14px;
+  --bg:#0b0b0f; --surface:#111117; --surface-2:#17171f; --surface-3:#1e1e28;
+  --border:rgba(255,255,255,0.06); --border-md:rgba(255,255,255,0.11); --border-hi:rgba(255,255,255,0.18);
+  --text-1:#ededf2; --text-2:#8a8a9f; --text-3:#52526a;
+  --accent:#6c63ff; --accent-lt:#8b85ff; --accent-bg:rgba(108,99,255,0.09); --accent-bdr:rgba(108,99,255,0.22);
+  --green:#34d399; --green-bg:rgba(52,211,153,0.07); --green-bdr:rgba(52,211,153,0.18);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.07); --red-bdr:rgba(248,113,113,0.18);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --amber-bdr:rgba(251,191,36,0.18);
+  --r:10px; --r-sm:7px; --r-lg:14px;
 }
+html,body { background:var(--bg); color:var(--text-1); font-family:'DM Sans',sans-serif; font-size:14px; line-height:1.5; min-height:100vh; -webkit-font-smoothing:antialiased; }
+.shell { display:grid; grid-template-columns:240px 1fr; grid-template-rows:56px 1fr; min-height:100vh; }
+.topbar { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; padding:0 20px; border-bottom:1px solid var(--border); background:var(--surface); position:sticky; top:0; z-index:10; }
+.brand { display:flex; align-items:center; gap:9px; }
+.brand-mark { width:28px; height:28px; background:var(--accent); border-radius:7px; display:flex; align-items:center; justify-content:center; }
+.brand-mark svg { width:14px; height:14px; fill:none; stroke:#fff; stroke-width:2; }
+.brand-name { font-size:14px; font-weight:600; color:var(--text-1); letter-spacing:-0.2px; }
+.brand-chip { font-size:10px; font-weight:500; color:var(--accent-lt); background:var(--accent-bg); border:1px solid var(--accent-bdr); border-radius:100px; padding:2px 7px; letter-spacing:0.3px; }
+.topbar-r { display:flex; align-items:center; gap:8px; }
+.net-chip { display:flex; align-items:center; gap:5px; font-size:11px; font-family:'DM Mono',monospace; color:var(--text-3); background:var(--surface-2); border:1px solid var(--border); border-radius:100px; padding:5px 11px; }
+.net-dot { width:6px; height:6px; border-radius:50%; background:var(--text-3); transition:all .3s; }
+.net-dot.live { background:var(--green); box-shadow:0 0 5px var(--green); }
+.wallet-btn { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; background:var(--accent); color:#fff; border:none; border-radius:var(--r-sm); padding:7px 15px; cursor:pointer; transition:opacity .14s; }
+.wallet-btn:hover { opacity:0.85; }
+.wallet-btn.connected { background:var(--surface-3); border:1px solid var(--border-md); color:var(--text-1); font-family:'DM Mono',monospace; font-size:12px; }
+.disconnect-btn { display:none; align-items:center; justify-content:center; width:32px; height:32px; background:transparent; color:var(--text-3); border:1px solid var(--border); border-radius:var(--r-sm); cursor:pointer; transition:all .14s; flex-shrink:0; }
+.disconnect-btn:hover { background:var(--red-bg); color:var(--red); border-color:var(--red-bdr); }
+.sidebar { background:var(--surface); border-right:1px solid var(--border); padding:16px 12px; display:flex; flex-direction:column; gap:2px; overflow-y:auto; }
+.nav-section { font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-3); padding:10px 10px 5px; }
+.nav-item { display:flex; align-items:center; gap:9px; padding:8px 10px; border-radius:var(--r-sm); cursor:pointer; font-size:13px; font-weight:400; color:var(--text-2); border:1px solid transparent; transition:all .13s; user-select:none; }
+.nav-item:hover { color:var(--text-1); background:var(--surface-2); }
+.nav-item.active { color:var(--text-1); background:var(--surface-3); border-color:var(--border); font-weight:500; }
+.nav-ico { width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.nav-item.active .nav-ico { background:var(--accent-bg); }
+.nav-badge { margin-left:auto; font-size:10px; font-family:'DM Mono',monospace; color:var(--text-3); background:var(--surface-3); border-radius:100px; padding:2px 6px; }
+.s-footer { margin-top:auto; padding:14px; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r); }
+.s-label { font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:1px; color:var(--text-3); margin-bottom:6px; }
+.s-balance { font-size:20px; font-weight:600; font-family:'DM Mono',monospace; color:var(--text-1); letter-spacing:-0.5px; }
+.s-balance small { font-size:12px; color:var(--text-2); font-weight:400; margin-left:3px; }
+.s-actions { display:flex; gap:5px; margin-top:10px; }
+.s-btn { flex:1; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500; padding:7px 0; border-radius:var(--r-sm); border:1px solid; cursor:pointer; text-align:center; text-decoration:none; display:block; transition:opacity .14s,border-color .14s,color .14s; }
+.s-btn-p { background:var(--accent); border-color:var(--accent); color:#fff; }
+.s-btn-p:hover { opacity:0.85; }
+.s-btn-s { background:transparent; border-color:var(--border-md); color:var(--text-2); }
+.s-btn-s:hover { color:var(--text-1); border-color:var(--border-hi); }
+.main { padding:24px; overflow-y:auto; }
+.connect-state { display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 56px); }
+.connect-card { width:340px; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg); padding:32px; text-align:center; }
+.connect-ico { width:48px; height:48px; background:var(--accent-bg); border:1px solid var(--accent-bdr); border-radius:var(--r); display:flex; align-items:center; justify-content:center; font-size:20px; margin:0 auto 16px; }
+.connect-title { font-size:16px; font-weight:600; color:var(--text-1); letter-spacing:-0.3px; margin-bottom:8px; }
+.connect-desc { font-size:13px; color:var(--text-2); line-height:1.6; margin-bottom:20px; }
+.connect-cta { width:100%; padding:11px; background:var(--accent); border:none; border-radius:var(--r-sm); color:#fff; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; cursor:pointer; transition:opacity .14s; }
+.connect-cta:hover { opacity:0.86; }
+.ph { margin-bottom:20px; }
+.ph-title { font-size:18px; font-weight:600; letter-spacing:-0.3px; color:var(--text-1); }
+.ph-sub { font-size:12px; color:var(--text-3); margin-top:2px; }
+.stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+.stat { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:14px 16px; }
+.stat-lbl { font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-3); margin-bottom:5px; }
+.stat-val { font-size:18px; font-weight:600; font-family:'DM Mono',monospace; color:var(--text-1); letter-spacing:-0.4px; }
+.stat-val.c-green { color:var(--green); }
+.stat-val.c-amber { color:var(--amber); }
+.gc { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg); overflow:hidden; margin-bottom:12px; transition:border-color .15s; }
+.gc:hover { border-color:var(--border-md); }
+.gc-head { display:flex; align-items:center; justify-content:space-between; padding:15px 18px; cursor:pointer; transition:background .13s; }
+.gc-head:hover { background:var(--surface-2); }
+.gc-hl { display:flex; align-items:center; gap:12px; }
+.gc-ico { width:38px; height:38px; background:var(--surface-2); border:1px solid var(--border-md); border-radius:var(--r-sm); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.gc-name { font-size:14px; font-weight:600; color:var(--text-1); letter-spacing:-0.2px; }
+.gc-sub { font-size:12px; color:var(--text-3); margin-top:1px; }
+.gc-tags { display:flex; gap:5px; align-items:center; }
+.tag { font-size:11px; font-family:'DM Mono',monospace; border-radius:100px; padding:3px 9px; border:1px solid; }
+.tag-g { color:var(--green); border-color:var(--green-bdr); background:var(--green-bg); }
+.tag-b { color:#7ba8f5; border-color:rgba(123,168,245,0.18); background:rgba(123,168,245,0.05); }
+.tag-a { color:var(--amber); border-color:var(--amber-bdr); background:var(--amber-bg); }
+.caret { width:18px; height:18px; flex-shrink:0; color:var(--text-3); transition:transform .2s; }
+.gc.open .caret { transform:rotate(180deg); }
+.gc-body { display:none; padding:0 18px 18px; }
+.gc.open .gc-body { display:block; }
+.gc-inner { display:grid; grid-template-columns:1fr 260px; gap:18px; }
+.vis { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r); height:280px; display:flex; align-items:center; justify-content:center; margin-bottom:16px; overflow:visible; position:relative; }
+.vis.vis-wheel { height:340px; background:radial-gradient(ellipse at 50% 40%, rgba(108,99,255,0.06) 0%, transparent 70%), var(--surface-2); }
 
-html, body {
-  background: var(--bg);
-  color: var(--text-1);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
+/* COIN */
+.coin-wrap { width:80px; height:80px; perspective:400px; }
+.coin { width:80px; height:80px; position:relative; transform-style:preserve-3d; transition:none; }
+.coin-face,.coin-back { position:absolute; inset:0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:36px; backface-visibility:hidden; border:3px solid rgba(255,255,255,0.15); }
+.coin-face { background:radial-gradient(circle at 35% 35%,#fde68a,#f59e0b); }
+.coin-back { background:radial-gradient(circle at 35% 35%,#d1fae5,#6ee7b7); transform:rotateY(180deg); }
+@keyframes coinFlip { 0%{transform:rotateY(0deg)} 100%{transform:rotateY(1800deg)} }
+.coin.flipping { animation:coinFlip 1.6s cubic-bezier(.4,0,.2,1) forwards; }
+.coin.heads-result { transform:rotateY(0deg); }
+.coin.tails-result { transform:rotateY(180deg); }
 
-.shell {
-  display: grid;
-  grid-template-columns: 240px 1fr;
-  grid-template-rows: 56px 1fr;
-  min-height: 100vh;
-}
+/* DICE */
+.dice-3d { width:64px; height:64px; position:relative; transform-style:preserve-3d; transform:rotateX(20deg) rotateY(30deg); transition:transform 0.1s; }
+.die-face { position:absolute; width:64px; height:64px; background:#fff; border:2px solid #e5e7eb; border-radius:10px; display:grid; place-items:center; }
+.die-face .dots { display:grid; width:48px; height:48px; gap:4px; }
+.dot { width:10px; height:10px; border-radius:50%; background:#1e1b4b; }
+.die-face.f1{transform:translateZ(32px)} .die-face.f2{transform:rotateY(90deg) translateZ(32px)} .die-face.f3{transform:rotateX(-90deg) translateZ(32px)} .die-face.f4{transform:rotateX(90deg) translateZ(32px)} .die-face.f5{transform:rotateY(-90deg) translateZ(32px)} .die-face.f6{transform:rotateY(180deg) translateZ(32px)}
+@keyframes diceRoll { 0%{transform:rotateX(0)rotateY(0)rotateZ(0)} 25%{transform:rotateX(360deg)rotateY(180deg)rotateZ(90deg)} 50%{transform:rotateX(720deg)rotateY(360deg)rotateZ(180deg)} 75%{transform:rotateX(900deg)rotateY(540deg)rotateZ(270deg)} 100%{transform:rotateX(1080deg)rotateY(720deg)rotateZ(360deg)} }
+.dice-3d.rolling { animation:diceRoll 1.4s cubic-bezier(.4,0,.2,1) forwards; }
 
-.topbar {
-  grid-column: 1/-1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-  position: sticky; top: 0; z-index: 10;
-}
+/* WHEEL */
+.wheel-scene { position:relative; display:flex; align-items:center; justify-content:center; width:310px; height:310px; }
+.wheel-scene::before { content:''; position:absolute; inset:14px; border-radius:50%; background:radial-gradient(circle,rgba(108,99,255,0.12) 0%,transparent 70%); pointer-events:none; }
+.wheel-scene::after { content:''; position:absolute; inset:-12px; border-radius:50%; background:conic-gradient(from 0deg, rgba(108,99,255,0.08), rgba(251,191,36,0.06), rgba(52,211,153,0.06), rgba(108,99,255,0.08)); animation:wheelAura 8s linear infinite; pointer-events:none; filter:blur(8px); }
+@keyframes wheelAura { to { transform:rotate(360deg); } }
+.wheel-svg-el { width:290px; height:290px; filter:drop-shadow(0 8px 40px rgba(0,0,0,0.7)) drop-shadow(0 0 20px rgba(108,99,255,0.15)); transform-origin:center center; }
+@keyframes wheelSpin { 0%{transform:rotate(0deg)} 100%{transform:rotate(var(--spin-deg,1440deg))} }
+.wheel-svg-el.spinning { animation:wheelSpin 3s cubic-bezier(.12,.6,.08,1) forwards; }
+.wheel-pin { position:absolute; top:0px; left:50%; transform:translateX(-50%); z-index:3; filter:drop-shadow(0 4px 10px rgba(251,191,36,0.9)); }
 
-.brand { display: flex; align-items: center; gap: 9px; }
-.brand-mark {
-  width: 28px; height: 28px;
-  background: var(--accent);
-  border-radius: 7px;
-  display: flex; align-items: center; justify-content: center;
-}
-.brand-mark svg { width: 14px; height: 14px; fill: none; stroke: #fff; stroke-width: 2; }
-.brand-name { font-size: 14px; font-weight: 600; color: var(--text-1); letter-spacing: -0.2px; }
-.brand-chip {
-  font-size: 10px; font-weight: 500; color: var(--accent-lt);
-  background: var(--accent-bg); border: 1px solid var(--accent-bdr);
-  border-radius: 100px; padding: 2px 7px; letter-spacing: 0.3px;
-}
+/* FIELD */
+.fl { margin-bottom:14px; }
+.fl-lbl { font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:1px; color:var(--text-3); margin-bottom:7px; }
+.choice-row { display:flex; gap:5px; flex-wrap:wrap; }
+.ch { padding:7px 11px; min-width:40px; background:var(--surface-3); border:1px solid var(--border); border-radius:var(--r-sm); color:var(--text-2); font-family:'DM Mono',monospace; font-size:13px; cursor:pointer; transition:all .13s; text-align:center; }
+.ch:hover { border-color:var(--border-md); color:var(--text-1); }
+.ch.on { background:var(--accent-bg); border-color:var(--accent-bdr); color:var(--accent-lt); font-weight:500; }
+.pbar-track { height:4px; background:var(--surface-3); border-radius:100px; overflow:hidden; margin:6px 0 4px; }
+.pbar-fill { height:100%; border-radius:100px; background:var(--accent); }
+.pbar-meta { display:flex; justify-content:space-between; font-size:10px; color:var(--text-3); font-family:'DM Mono',monospace; }
+.bet-panel { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r); padding:14px; display:flex; flex-direction:column; gap:12px; }
+.bet-field-lbl { font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:1px; color:var(--text-3); margin-bottom:6px; }
+.bet-wrap { display:flex; align-items:center; background:var(--surface-3); border:1px solid var(--border); border-radius:var(--r-sm); overflow:hidden; transition:border-color .13s; }
+.bet-wrap:focus-within { border-color:var(--accent-bdr); }
+.bet-curr { padding:0 11px; font-family:'DM Mono',monospace; font-size:11px; color:var(--text-3); border-right:1px solid var(--border); height:36px; display:flex; align-items:center; white-space:nowrap; }
+.bet-in { flex:1; background:transparent; border:none; outline:none; color:var(--text-1); font-family:'DM Mono',monospace; font-size:13px; padding:0 11px; height:36px; }
+.qbets { display:flex; gap:4px; }
+.qb { flex:1; padding:5px 0; background:transparent; border:1px solid var(--border); border-radius:6px; color:var(--text-3); font-family:'DM Mono',monospace; font-size:10px; cursor:pointer; transition:all .13s; text-align:center; }
+.qb:hover { color:var(--text-1); border-color:var(--border-md); }
+.payout-row { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-top:1px solid var(--border); }
+.payout-lbl { font-size:12px; color:var(--text-3); }
+.payout-val { font-family:'DM Mono',monospace; font-size:12px; color:var(--green); font-weight:500; }
+.play-btn { width:100%; padding:11px; background:var(--accent); border:none; border-radius:var(--r-sm); color:#fff; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:opacity .13s,transform .1s; }
+.play-btn:hover:not(:disabled) { opacity:0.86; }
+.play-btn:active:not(:disabled) { transform:scale(0.98); }
+.play-btn:disabled { opacity:0.3; cursor:not-allowed; }
+.result-banner { margin-top:12px; border-radius:var(--r); padding:12px 14px; display:flex; align-items:center; gap:12px; border:1px solid; animation:fadeUp .25s ease-out; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(-5px)} to{opacity:1;transform:translateY(0)} }
+.result-banner.win  { background:var(--green-bg); border-color:var(--green-bdr); }
+.result-banner.lose { background:var(--red-bg);   border-color:var(--red-bdr);   }
+.r-ico { width:32px; height:32px; border-radius:var(--r-sm); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.result-banner.win  .r-ico { background:rgba(52,211,153,0.1); }
+.result-banner.lose .r-ico { background:rgba(248,113,113,0.1); }
+.r-body { flex:1; }
+.r-head { font-size:13px; font-weight:600; letter-spacing:-0.2px; }
+.result-banner.win  .r-head { color:var(--green); }
+.result-banner.lose .r-head { color:var(--red);   }
+.r-detail { font-size:11px; color:var(--text-2); font-family:'DM Mono',monospace; margin-top:2px; }
+.status-line { display:flex; align-items:center; gap:7px; padding:9px 12px; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r-sm); font-size:12px; color:var(--text-2); margin-top:10px; animation:fadeUp .2s ease-out; }
+.spin { width:13px; height:13px; border:1.5px solid rgba(255,255,255,0.12); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; flex-shrink:0; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.err-line { padding:9px 12px; background:var(--red-bg); border:1px solid var(--red-bdr); border-radius:var(--r-sm); font-size:12px; color:var(--red); margin-top:10px; animation:fadeUp .2s ease-out; }
+.net-warn-bar { display:none; align-items:center; gap:7px; padding:8px 20px; background:var(--amber-bg); border-bottom:1px solid var(--amber-bdr); font-size:12px; color:var(--amber); grid-column:1/-1; }
+.hist-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg); overflow:hidden; margin-top:20px; }
+.hist-head { padding:13px 18px; border-bottom:1px solid var(--border); font-size:12px; font-weight:500; color:var(--text-2); }
+.hist-tbl { width:100%; border-collapse:collapse; font-size:13px; }
+.hist-tbl th { text-align:left; padding:9px 18px; font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-3); border-bottom:1px solid var(--border); }
+.hist-tbl td { padding:10px 18px; color:var(--text-2); border-bottom:1px solid var(--border); }
+.hist-tbl tr:last-child td { border-bottom:none; }
+.hist-tbl tr:hover td { background:var(--surface-2); }
+.hist-tbl td.mono { font-family:'DM Mono',monospace; font-size:12px; }
+.badge { display:inline-flex; align-items:center; padding:3px 8px; border-radius:100px; font-size:11px; font-weight:500; border:1px solid; }
+.badge-win  { background:var(--green-bg); color:var(--green); border-color:var(--green-bdr); }
+.badge-lose { background:var(--red-bg);   color:var(--red);   border-color:var(--red-bdr);   }
 
-.topbar-r { display: flex; align-items: center; gap: 8px; }
-.net-chip {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 11px; font-family: 'DM Mono', monospace;
-  color: var(--text-3); background: var(--surface-2);
-  border: 1px solid var(--border); border-radius: 100px; padding: 5px 11px;
-}
-.net-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); transition: all .3s; }
-.net-dot.live { background: var(--green); box-shadow: 0 0 5px var(--green); }
+/* TAB */
+.tab-bar { display:flex; gap:4px; margin-bottom:20px; padding:4px; background:var(--surface); border:1px solid var(--border); border-radius:var(--r); width:fit-content; }
+.tab-btn { padding:7px 18px; border-radius:7px; border:none; background:transparent; color:var(--text-2); font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; cursor:pointer; transition:all .13s; }
+.tab-btn.active { background:var(--surface-3); color:var(--text-1); border:1px solid var(--border-md); }
+.tab-btn:hover:not(.active) { color:var(--text-1); }
 
-.wallet-btn {
-  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
-  background: var(--accent); color: #fff; border: none;
-  border-radius: var(--r-sm); padding: 7px 15px; cursor: pointer; transition: opacity .14s;
-}
-.wallet-btn:hover { opacity: 0.85; }
-.wallet-btn.connected {
-  background: var(--surface-3); border: 1px solid var(--border-md);
-  color: var(--text-1); font-family: 'DM Mono', monospace; font-size: 12px;
-}
+/* DEX */
+.dex-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg); padding:24px; max-width:440px; margin:0 auto; }
+.dex-title { font-size:15px; font-weight:600; letter-spacing:-0.2px; margin-bottom:4px; }
+.dex-sub { font-size:12px; color:var(--text-3); margin-bottom:22px; }
+.dex-token-box { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r); padding:14px 16px; margin-bottom:4px; transition:border-color .13s; }
+.dex-token-box:focus-within { border-color:var(--accent-bdr); }
+.dex-box-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.dex-box-lbl { font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-3); }
+.dex-box-bal { font-size:11px; color:var(--text-3); font-family:'DM Mono',monospace; cursor:pointer; }
+.dex-box-bal:hover { color:var(--accent-lt); }
+.dex-input-row { display:flex; align-items:center; gap:10px; }
+.dex-amount { flex:1; background:transparent; border:none; outline:none; font-family:'DM Mono',monospace; font-size:22px; font-weight:600; color:var(--text-1); letter-spacing:-0.5px; min-width:0; }
+.dex-amount::placeholder { color:var(--text-3); }
+.dex-token-badge { display:flex; align-items:center; gap:6px; background:var(--surface-3); border:1px solid var(--border-md); border-radius:100px; padding:5px 12px 5px 8px; white-space:nowrap; }
+.dex-token-dot { width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; }
+.dex-token-name { font-size:13px; font-weight:600; color:var(--text-1); }
+.dex-arrow-row { display:flex; justify-content:center; margin:8px 0; }
+.dex-arrow-btn { width:36px; height:36px; border-radius:50%; border:1px solid var(--border-md); background:var(--surface-3); color:var(--text-2); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s; }
+.dex-arrow-btn:hover { border-color:var(--accent-bdr); color:var(--accent-lt); background:var(--accent-bg); transform:rotate(180deg); }
+.dex-rate-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; font-size:12px; color:var(--text-3); font-family:'DM Mono',monospace; border-top:1px solid var(--border); margin-top:14px; }
+.dex-rate-val { color:var(--text-2); }
+.dex-swap-btn { width:100%; margin-top:16px; padding:13px; background:var(--accent); border:none; border-radius:var(--r-sm); color:#fff; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; cursor:pointer; transition:opacity .13s,transform .1s; }
+.dex-swap-btn:hover:not(:disabled) { opacity:0.86; }
+.dex-swap-btn:active:not(:disabled) { transform:scale(0.99); }
+.dex-swap-btn:disabled { opacity:0.35; cursor:not-allowed; }
+.dex-status { padding:10px 14px; border-radius:var(--r-sm); font-size:12px; margin-top:12px; display:none; animation:fadeUp .2s ease-out; }
+.dex-status.info  { background:var(--accent-bg); border:1px solid var(--accent-bdr); color:var(--accent-lt); display:flex; gap:8px; align-items:center; }
+.dex-status.ok    { background:var(--green-bg);  border:1px solid var(--green-bdr);  color:var(--green);      display:flex; gap:8px; align-items:center; }
+.dex-status.error { background:var(--red-bg);    border:1px solid var(--red-bdr);    color:var(--red);        display:block; }
+.dex-info-box { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r); padding:14px 16px; margin-top:16px; font-size:12px; color:var(--text-3); line-height:1.7; }
+.dex-info-box strong { color:var(--text-2); }
 
-.sidebar {
-  background: var(--surface); border-right: 1px solid var(--border);
-  padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto;
-}
-.nav-section {
-  font-size: 10px; font-weight: 500; text-transform: uppercase;
-  letter-spacing: 1.2px; color: var(--text-3); padding: 10px 10px 5px;
-}
-.nav-item {
-  display: flex; align-items: center; gap: 9px; padding: 8px 10px;
-  border-radius: var(--r-sm); cursor: pointer; font-size: 13px; font-weight: 400;
-  color: var(--text-2); border: 1px solid transparent; transition: all .13s; user-select: none;
-}
-.nav-item:hover { color: var(--text-1); background: var(--surface-2); }
-.nav-item.active { color: var(--text-1); background: var(--surface-3); border-color: var(--border); font-weight: 500; }
-.nav-ico { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
-.nav-item.active .nav-ico { background: var(--accent-bg); }
-.nav-badge { margin-left: auto; font-size: 10px; font-family: 'DM Mono', monospace; color: var(--text-3); background: var(--surface-3); border-radius: 100px; padding: 2px 6px; }
-
-.s-footer { margin-top: auto; padding: 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r); }
-.s-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--text-3); margin-bottom: 6px; }
-.s-balance { font-size: 20px; font-weight: 600; font-family: 'DM Mono', monospace; color: var(--text-1); letter-spacing: -0.5px; }
-.s-balance small { font-size: 12px; color: var(--text-2); font-weight: 400; margin-left: 3px; }
-.s-actions { display: flex; gap: 5px; margin-top: 10px; }
-.s-btn { flex: 1; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 7px 0; border-radius: var(--r-sm); border: 1px solid; cursor: pointer; text-align: center; text-decoration: none; display: block; transition: opacity .14s, border-color .14s, color .14s; }
-.s-btn-p { background: var(--accent); border-color: var(--accent); color: #fff; }
-.s-btn-p:hover { opacity: 0.85; }
-.s-btn-s { background: transparent; border-color: var(--border-md); color: var(--text-2); }
-.s-btn-s:hover { color: var(--text-1); border-color: var(--border-hi); }
-
-.main { padding: 24px; overflow-y: auto; }
-
-.connect-state { display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 56px); }
-.connect-card { width: 340px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 32px; text-align: center; }
-.connect-ico { width: 48px; height: 48px; background: var(--accent-bg); border: 1px solid var(--accent-bdr); border-radius: var(--r); display: flex; align-items: center; justify-content: center; font-size: 20px; margin: 0 auto 16px; }
-.connect-title { font-size: 16px; font-weight: 600; color: var(--text-1); letter-spacing: -0.3px; margin-bottom: 8px; }
-.connect-desc { font-size: 13px; color: var(--text-2); line-height: 1.6; margin-bottom: 20px; }
-.connect-cta { width: 100%; padding: 11px; background: var(--accent); border: none; border-radius: var(--r-sm); color: #fff; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .14s; }
-.connect-cta:hover { opacity: 0.86; }
-
-.ph { margin-bottom: 20px; }
-.ph-title { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; color: var(--text-1); }
-.ph-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; }
-
-.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-.stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; }
-.stat-lbl { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-3); margin-bottom: 5px; }
-.stat-val { font-size: 18px; font-weight: 600; font-family: 'DM Mono', monospace; color: var(--text-1); letter-spacing: -0.4px; }
-.stat-val.c-green { color: var(--green); }
-.stat-val.c-amber { color: var(--amber); }
-
-.gc { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; margin-bottom: 12px; transition: border-color .15s; }
-.gc:hover { border-color: var(--border-md); }
-.gc-head { display: flex; align-items: center; justify-content: space-between; padding: 15px 18px; cursor: pointer; transition: background .13s; }
-.gc-head:hover { background: var(--surface-2); }
-.gc-hl { display: flex; align-items: center; gap: 12px; }
-.gc-ico { width: 38px; height: 38px; background: var(--surface-2); border: 1px solid var(--border-md); border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-.gc-name { font-size: 14px; font-weight: 600; color: var(--text-1); letter-spacing: -0.2px; }
-.gc-sub { font-size: 12px; color: var(--text-3); margin-top: 1px; }
-.gc-tags { display: flex; gap: 5px; align-items: center; }
-.tag { font-size: 11px; font-family: 'DM Mono', monospace; border-radius: 100px; padding: 3px 9px; border: 1px solid; }
-.tag-g { color: var(--green); border-color: var(--green-bdr); background: var(--green-bg); }
-.tag-b { color: #7ba8f5; border-color: rgba(123,168,245,0.18); background: rgba(123,168,245,0.05); }
-.tag-a { color: var(--amber); border-color: var(--amber-bdr); background: var(--amber-bg); }
-.caret { width: 18px; height: 18px; flex-shrink: 0; color: var(--text-3); transition: transform .2s; }
-.gc.open .caret { transform: rotate(180deg); }
-.gc-body { display: none; padding: 0 18px 18px; }
-.gc.open .gc-body { display: block; }
-.gc-inner { display: grid; grid-template-columns: 1fr 260px; gap: 18px; }
-
-/* ── VISUAL AREA ── */
-.vis {
-  background: var(--surface-2); border: 1px solid var(--border);
-  border-radius: var(--r); height: 140px;
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 16px; overflow: hidden; position: relative;
-}
-
-/* ── COIN ANIMATION ── */
-.coin-wrap { width: 80px; height: 80px; perspective: 400px; }
-.coin {
-  width: 80px; height: 80px; position: relative;
-  transform-style: preserve-3d; transition: none;
-}
-.coin-face, .coin-back {
-  position: absolute; inset: 0; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 36px; backface-visibility: hidden;
-  border: 3px solid rgba(255,255,255,0.15);
-}
-.coin-face { background: radial-gradient(circle at 35% 35%, #fde68a, #f59e0b); }
-.coin-back { background: radial-gradient(circle at 35% 35%, #d1fae5, #6ee7b7); transform: rotateY(180deg); }
-
-@keyframes coinFlip {
-  0%   { transform: rotateY(0deg); }
-  100% { transform: rotateY(1800deg); }
-}
-@keyframes coinLand {
-  0%   { transform: rotateY(1800deg) scale(1); }
-  50%  { transform: rotateY(1800deg) scale(1.12); }
-  100% { transform: rotateY(1800deg) scale(1); }
-}
-.coin.flipping { animation: coinFlip 1.6s cubic-bezier(.4,0,.2,1) forwards; }
-.coin.heads-result { transform: rotateY(0deg); }
-.coin.tails-result { transform: rotateY(180deg); }
-
-/* ── DICE ANIMATION ── */
-.dice-3d {
-  width: 64px; height: 64px; position: relative;
-  transform-style: preserve-3d;
-  transform: rotateX(20deg) rotateY(30deg);
-  transition: transform 0.1s;
-}
-.die-face {
-  position: absolute; width: 64px; height: 64px;
-  background: #fff; border: 2px solid #e5e7eb; border-radius: 10px;
-  display: grid; place-items: center;
-}
-.die-face .dots { display: grid; width: 48px; height: 48px; gap: 4px; }
-.dot { width: 10px; height: 10px; border-radius: 50%; background: #1e1b4b; }
-
-/* faces positions */
-.die-face.f1 { transform: translateZ(32px); }
-.die-face.f2 { transform: rotateY(90deg) translateZ(32px); }
-.die-face.f3 { transform: rotateX(-90deg) translateZ(32px); }
-.die-face.f4 { transform: rotateX(90deg) translateZ(32px); }
-.die-face.f5 { transform: rotateY(-90deg) translateZ(32px); }
-.die-face.f6 { transform: rotateY(180deg) translateZ(32px); }
-
-@keyframes diceRoll {
-  0%   { transform: rotateX(0deg)   rotateY(0deg)   rotateZ(0deg); }
-  25%  { transform: rotateX(360deg) rotateY(180deg) rotateZ(90deg); }
-  50%  { transform: rotateX(720deg) rotateY(360deg) rotateZ(180deg); }
-  75%  { transform: rotateX(900deg) rotateY(540deg) rotateZ(270deg); }
-  100% { transform: rotateX(1080deg) rotateY(720deg) rotateZ(360deg); }
-}
-.dice-3d.rolling { animation: diceRoll 1.4s cubic-bezier(.4,0,.2,1) forwards; }
-
-/* ── WHEEL ANIMATION ── */
-.wheel-container { position: relative; width: 220px; height: 220px; }
-.wheel-svg { width: 220px; height: 220px; }
-.wheel-pointer {
-  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
-  width: 0; height: 0;
-  border-left: 13px solid transparent;
-  border-right: 13px solid transparent;
-  border-top: 28px solid var(--amber);
-  filter: drop-shadow(0 2px 6px rgba(251,191,36,0.5));
-}
-@keyframes wheelSpin {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(var(--spin-deg, 1440deg)); }
-}
-.wheel-svg.spinning {
-  animation: wheelSpin 2s cubic-bezier(.17,.67,.12,1) forwards;
-}
-
-/* ── FIELD ── */
-.fl { margin-bottom: 14px; }
-.fl-lbl { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--text-3); margin-bottom: 7px; }
-.choice-row { display: flex; gap: 5px; flex-wrap: wrap; }
-.ch { padding: 7px 11px; min-width: 40px; background: var(--surface-3); border: 1px solid var(--border); border-radius: var(--r-sm); color: var(--text-2); font-family: 'DM Mono', monospace; font-size: 13px; cursor: pointer; transition: all .13s; text-align: center; }
-.ch:hover { border-color: var(--border-md); color: var(--text-1); }
-.ch.on { background: var(--accent-bg); border-color: var(--accent-bdr); color: var(--accent-lt); font-weight: 500; }
-
-.pbar-track { height: 4px; background: var(--surface-3); border-radius: 100px; overflow: hidden; margin: 6px 0 4px; }
-.pbar-fill { height: 100%; border-radius: 100px; background: var(--accent); }
-.pbar-meta { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-3); font-family: 'DM Mono', monospace; }
-
-.bet-panel { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r); padding: 14px; display: flex; flex-direction: column; gap: 12px; }
-.bet-field-lbl { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--text-3); margin-bottom: 6px; }
-.bet-wrap { display: flex; align-items: center; background: var(--surface-3); border: 1px solid var(--border); border-radius: var(--r-sm); overflow: hidden; transition: border-color .13s; }
-.bet-wrap:focus-within { border-color: var(--accent-bdr); }
-.bet-curr { padding: 0 11px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-3); border-right: 1px solid var(--border); height: 36px; display: flex; align-items: center; white-space: nowrap; }
-.bet-in { flex: 1; background: transparent; border: none; outline: none; color: var(--text-1); font-family: 'DM Mono', monospace; font-size: 13px; padding: 0 11px; height: 36px; }
-.qbets { display: flex; gap: 4px; }
-.qb { flex: 1; padding: 5px 0; background: transparent; border: 1px solid var(--border); border-radius: 6px; color: var(--text-3); font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; transition: all .13s; text-align: center; }
-.qb:hover { color: var(--text-1); border-color: var(--border-md); }
-
-.payout-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-top: 1px solid var(--border); }
-.payout-lbl { font-size: 12px; color: var(--text-3); }
-.payout-val { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--green); font-weight: 500; }
-
-.play-btn { width: 100%; padding: 11px; background: var(--accent); border: none; border-radius: var(--r-sm); color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity .13s, transform .1s; letter-spacing: -0.1px; }
-.play-btn:hover:not(:disabled) { opacity: 0.86; }
-.play-btn:active:not(:disabled) { transform: scale(0.98); }
-.play-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-.result-banner { margin-top: 12px; border-radius: var(--r); padding: 12px 14px; display: flex; align-items: center; gap: 12px; border: 1px solid; animation: fadeUp .25s ease-out; }
-@keyframes fadeUp { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
-.result-banner.win  { background: var(--green-bg);  border-color: var(--green-bdr); }
-.result-banner.lose { background: var(--red-bg);    border-color: var(--red-bdr);   }
-.r-ico { width: 32px; height: 32px; border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-.result-banner.win  .r-ico { background: rgba(52,211,153,0.1); }
-.result-banner.lose .r-ico { background: rgba(248,113,113,0.1); }
-.r-body { flex: 1; }
-.r-head { font-size: 13px; font-weight: 600; letter-spacing: -0.2px; }
-.result-banner.win  .r-head { color: var(--green); }
-.result-banner.lose .r-head { color: var(--red);   }
-.r-detail { font-size: 11px; color: var(--text-2); font-family: 'DM Mono', monospace; margin-top: 2px; }
-
-.status-line { display: flex; align-items: center; gap: 7px; padding: 9px 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-sm); font-size: 12px; color: var(--text-2); margin-top: 10px; animation: fadeUp .2s ease-out; }
-.spin { width: 13px; height: 13px; border: 1.5px solid rgba(255,255,255,0.12); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.err-line { padding: 9px 12px; background: var(--red-bg); border: 1px solid var(--red-bdr); border-radius: var(--r-sm); font-size: 12px; color: var(--red); margin-top: 10px; animation: fadeUp .2s ease-out; }
-
-.net-warn-bar { display: none; align-items: center; gap: 7px; padding: 8px 20px; background: var(--amber-bg); border-bottom: 1px solid var(--amber-bdr); font-size: 12px; color: var(--amber); grid-column: 1/-1; }
-
-.hist-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; margin-top: 20px; }
-.hist-head { padding: 13px 18px; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 500; color: var(--text-2); letter-spacing: -0.1px; }
-.hist-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
-.hist-tbl th { text-align: left; padding: 9px 18px; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-3); border-bottom: 1px solid var(--border); }
-.hist-tbl td { padding: 10px 18px; color: var(--text-2); border-bottom: 1px solid var(--border); }
-.hist-tbl tr:last-child td { border-bottom: none; }
-.hist-tbl tr:hover td { background: var(--surface-2); }
-.hist-tbl td.mono { font-family: 'DM Mono', monospace; font-size: 12px; }
-.badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 100px; font-size: 11px; font-weight: 500; border: 1px solid; }
-.badge-win  { background: var(--green-bg);  color: var(--green);  border-color: var(--green-bdr);  }
-.badge-lose { background: var(--red-bg);    color: var(--red);    border-color: var(--red-bdr);    }
-
-@media (max-width: 760px) {
-  .shell { grid-template-columns: 1fr; }
-  .sidebar { display: none; }
-  .stats { grid-template-columns: 1fr 1fr; }
-  .gc-inner { grid-template-columns: 1fr; }
-  .main { padding: 16px; }
-  .gc-tags { display: none; }
+@media (max-width:760px) {
+  .shell { grid-template-columns:1fr; }
+  .sidebar { display:none; }
+  .stats { grid-template-columns:1fr 1fr; }
+  .gc-inner { grid-template-columns:1fr; }
+  .main { padding:16px; }
+  .gc-tags { display:none; }
 }
 </style>
 </head>
 <body>
-
 <div class="shell">
 
   <div class="topbar">
     <div class="brand">
-      <div class="brand-mark">
-        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      </div>
+      <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
       <span class="brand-name">HUBARB</span>
       <span class="brand-chip">TESTNET</span>
     </div>
     <div class="topbar-r">
-      <div class="net-chip">
-        <div class="net-dot" id="net-dot"></div>
-        <span>Arbitrum Sepolia</span>
-      </div>
+      <div class="net-chip"><div class="net-dot" id="net-dot"></div><span>Arbitrum Sepolia</span></div>
+      <button class="disconnect-btn" id="disconnect-btn" onclick="doDisconnect()" title="Disconnect wallet">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
       <button class="wallet-btn" id="connect-btn" onclick="handleConnect()">Connect wallet</button>
     </div>
   </div>
@@ -360,24 +249,13 @@ html, body {
 
   <div class="sidebar">
     <div class="nav-section">Games</div>
-    <div class="nav-item" onclick="openGame(0)">
-      <div class="nav-ico">🪙</div>Coin Flip
-      <span class="nav-badge">1.9×</span>
-    </div>
-    <div class="nav-item" onclick="openGame(1)">
-      <div class="nav-ico">🎲</div>Dice Roll
-      <span class="nav-badge">5.7×</span>
-    </div>
-    <div class="nav-item" onclick="openGame(2)">
-      <div class="nav-ico">🎡</div>Spin Wheel
-      <span class="nav-badge">4.75×</span>
-    </div>
-
-    <div class="nav-section" style="margin-top:8px">Rewards</div>
-    <div class="nav-item" id="hist-nav" onclick="scrollToHistory()">
-      <div class="nav-ico">📊</div>History
-    </div>
-
+    <div class="nav-item" onclick="showTab('games');openGame(0)"><div class="nav-ico">🪙</div>Coin Flip<span class="nav-badge">1.9×</span></div>
+    <div class="nav-item" onclick="showTab('games');openGame(1)"><div class="nav-ico">🎲</div>Dice Roll<span class="nav-badge">5.7×</span></div>
+    <div class="nav-item" onclick="showTab('games');openGame(2)"><div class="nav-ico">🎡</div>Spin Wheel<span class="nav-badge">4.75×</span></div>
+    <div class="nav-section" style="margin-top:8px">Finance</div>
+    <div class="nav-item" onclick="showTab('dex')"><div class="nav-ico">🔄</div>Swap</div>
+    <div class="nav-item" onclick="showTab('pool')"><div class="nav-ico">💧</div>Liquidity Pool</div>
+    <div class="nav-item" onclick="showTab('games');scrollToHistory()"><div class="nav-ico">📊</div>History</div>
     <div class="s-footer">
       <div class="s-label">FUN balance</div>
       <div class="s-balance" id="s-bal">0.00<small>FUN</small></div>
@@ -389,7 +267,6 @@ html, body {
   </div>
 
   <div class="main">
-
     <div class="connect-state" id="no-wallet">
       <div class="connect-card">
         <div class="connect-ico">🔐</div>
@@ -400,298 +277,422 @@ html, body {
     </div>
 
     <div id="game-view" style="display:none">
-
-      <div class="ph">
-        <div class="ph-title">Games</div>
-        <div class="ph-sub">Fully on-chain · earn FUN tokens on every win</div>
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-games" onclick="showTab('games')">🎮 Games</button>
+        <button class="tab-btn" id="tab-dex" onclick="showTab('dex')">🔄 Swap</button>
+        <button class="tab-btn" id="tab-pool" onclick="showTab('pool')">💧 Pool</button>
       </div>
 
-      <div class="stats">
-        <div class="stat">
-          <div class="stat-lbl">FUN earned</div>
-          <div class="stat-val c-amber" id="s-fun">0.00</div>
+      <!-- GAMES PANEL -->
+      <div id="panel-games">
+        <div class="ph"><div class="ph-title">Games</div><div class="ph-sub">Fully on-chain · earn FUN tokens on every win</div></div>
+        <div class="stats">
+          <div class="stat"><div class="stat-lbl">FUN earned</div><div class="stat-val c-amber" id="s-fun">0.00</div></div>
+          <div class="stat"><div class="stat-lbl">Games played</div><div class="stat-val" id="s-played">0</div></div>
+          <div class="stat"><div class="stat-lbl">Win rate</div><div class="stat-val c-green" id="s-wr">—</div></div>
         </div>
-        <div class="stat">
-          <div class="stat-lbl">Games played</div>
-          <div class="stat-val" id="s-played">0</div>
-        </div>
-        <div class="stat">
-          <div class="stat-lbl">Win rate</div>
-          <div class="stat-val c-green" id="s-wr">—</div>
-        </div>
-      </div>
 
-      <!-- COIN FLIP -->
-      <div class="gc open" id="gc-0">
-        <div class="gc-head" onclick="toggleGc(0)">
-          <div class="gc-hl">
-            <div class="gc-ico">🪙</div>
+        <!-- COIN FLIP -->
+        <div class="gc open" id="gc-0">
+          <div class="gc-head" onclick="toggleGc(0)">
+            <div class="gc-hl"><div class="gc-ico">🪙</div><div><div class="gc-name">Coin Flip</div><div class="gc-sub">Heads or tails · 50% chance to win</div></div></div>
+            <div style="display:flex;align-items:center;gap:7px"><div class="gc-tags"><span class="tag tag-g">1.9× payout</span><span class="tag tag-b">50% odds</span></div><svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+          </div>
+          <div class="gc-body"><div class="gc-inner">
             <div>
-              <div class="gc-name">Coin Flip</div>
-              <div class="gc-sub">Heads or tails · 50% chance to win</div>
+              <div class="vis" id="vis-0"><div class="coin-wrap"><div class="coin heads-result" id="coin-el"><div class="coin-face">🌕</div><div class="coin-back">🌑</div></div></div></div>
+              <div class="fl"><div class="fl-lbl">Your pick</div><div class="choice-row"><button class="ch on" id="c0-0" onclick="pickCoin(0)">Heads</button><button class="ch" id="c0-1" onclick="pickCoin(1)">Tails</button></div></div>
+              <div class="fl"><div class="fl-lbl">Win probability</div><div class="pbar-track"><div class="pbar-fill" style="width:50%"></div></div><div class="pbar-meta"><span>0%</span><span>50%</span><span>100%</span></div></div>
+              <div id="st-0"></div><div id="res-0"></div><div id="err-0"></div>
             </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:7px">
-            <div class="gc-tags">
-              <span class="tag tag-g">1.9× payout</span>
-              <span class="tag tag-b">50% odds</span>
-            </div>
-            <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
+            <div><div class="bet-panel">
+              <div><div class="bet-field-lbl">Bet amount</div><div class="bet-wrap"><div class="bet-curr">ETH</div><input class="bet-in" type="number" id="bet-0" value="0.001" min="0.0001" max="0.1" step="0.0001" oninput="updPayout(0)"/></div></div>
+              <div><div class="bet-field-lbl">Quick bet</div><div class="qbets"><button class="qb" onclick="qbet(0,'0.0001')">0.0001</button><button class="qb" onclick="qbet(0,'0.001')">0.001</button><button class="qb" onclick="qbet(0,'0.01')">0.01</button><button class="qb" onclick="qbet(0,'0.05')">0.05</button></div></div>
+              <div class="payout-row"><span class="payout-lbl">Potential payout</span><span class="payout-val" id="po-0">0.0019 ETH</span></div>
+              <button class="play-btn" id="pb-0" onclick="doPlay(0)">Flip coin</button>
+            </div></div>
+          </div></div>
         </div>
-        <div class="gc-body">
-          <div class="gc-inner">
-            <div>
-              <div class="vis" id="vis-0">
-                <div class="coin-wrap">
-                  <div class="coin heads-result" id="coin-el">
-                    <div class="coin-face">🌕</div>
-                    <div class="coin-back">🌑</div>
-                  </div>
-                </div>
-              </div>
-              <div class="fl">
-                <div class="fl-lbl">Your pick</div>
-                <div class="choice-row">
-                  <button class="ch on" id="c0-0" onclick="pickCoin(0)">Heads</button>
-                  <button class="ch" id="c0-1" onclick="pickCoin(1)">Tails</button>
-                </div>
-              </div>
-              <div class="fl">
-                <div class="fl-lbl">Win probability</div>
-                <div class="pbar-track"><div class="pbar-fill" style="width:50%"></div></div>
-                <div class="pbar-meta"><span>0%</span><span>50%</span><span>100%</span></div>
-              </div>
-              <div id="st-0"></div>
-              <div id="res-0"></div>
-              <div id="err-0"></div>
-            </div>
-            <div>
-              <div class="bet-panel">
-                <div>
-                  <div class="bet-field-lbl">Bet amount</div>
-                  <div class="bet-wrap">
-                    <div class="bet-curr">ETH</div>
-                    <input class="bet-in" type="number" id="bet-0" value="0.001" min="0.0001" max="0.1" step="0.0001" oninput="updPayout(0)" />
-                  </div>
-                </div>
-                <div>
-                  <div class="bet-field-lbl">Quick bet</div>
-                  <div class="qbets">
-                    <button class="qb" onclick="qbet(0,'0.0001')">0.0001</button>
-                    <button class="qb" onclick="qbet(0,'0.001')">0.001</button>
-                    <button class="qb" onclick="qbet(0,'0.01')">0.01</button>
-                    <button class="qb" onclick="qbet(0,'0.05')">0.05</button>
-                  </div>
-                </div>
-                <div class="payout-row">
-                  <span class="payout-lbl">Potential payout</span>
-                  <span class="payout-val" id="po-0">0.0019 ETH</span>
-                </div>
-                <button class="play-btn" id="pb-0" onclick="doPlay(0)">Flip coin</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- DICE ROLL -->
-      <div class="gc" id="gc-1">
-        <div class="gc-head" onclick="toggleGc(1)">
-          <div class="gc-hl">
-            <div class="gc-ico">🎲</div>
+        <!-- DICE ROLL -->
+        <div class="gc" id="gc-1">
+          <div class="gc-head" onclick="toggleGc(1)">
+            <div class="gc-hl"><div class="gc-ico">🎲</div><div><div class="gc-name">Dice Roll</div><div class="gc-sub">Pick 1–6 · ~16.7% chance to win</div></div></div>
+            <div style="display:flex;align-items:center;gap:7px"><div class="gc-tags"><span class="tag tag-g">5.7× payout</span><span class="tag tag-b">16.7% odds</span></div><svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+          </div>
+          <div class="gc-body"><div class="gc-inner">
             <div>
-              <div class="gc-name">Dice Roll</div>
-              <div class="gc-sub">Pick 1–6 · ~16.7% chance to win</div>
+              <div class="vis" id="vis-1"><div style="perspective:300px"><div class="dice-3d" id="dice-el">
+                <div class="die-face f1"><div class="dots" style="grid-template-columns:1fr;grid-template-rows:1fr;place-items:center"><div class="dot"></div></div></div>
+                <div class="die-face f2"><div class="dots" style="grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr"><div class="dot" style="align-self:start;justify-self:start"></div><div></div><div></div><div class="dot" style="align-self:end;justify-self:end"></div></div></div>
+                <div class="die-face f3"><div class="dots" style="grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr 1fr"><div class="dot" style="align-self:start;justify-self:start"></div><div></div><div></div><div class="dot" style="place-self:center;grid-column:span 2"></div><div></div><div class="dot" style="align-self:end;justify-self:end"></div></div></div>
+                <div class="die-face f4"><div class="dots" style="grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+                <div class="die-face f5"><div class="dots" style="grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr 1fr"><div class="dot"></div><div class="dot"></div><div></div><div class="dot" style="place-self:center;grid-column:span 2"></div><div class="dot"></div><div class="dot"></div></div></div>
+                <div class="die-face f6"><div class="dots" style="grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr 1fr"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+              </div></div></div>
+              <div class="fl"><div class="fl-lbl">Your number</div><div class="choice-row" id="dice-row"><button class="ch" onclick="pickDice(1)">1</button><button class="ch" onclick="pickDice(2)">2</button><button class="ch" onclick="pickDice(3)">3</button><button class="ch" onclick="pickDice(4)">4</button><button class="ch" onclick="pickDice(5)">5</button><button class="ch on" onclick="pickDice(6)">6</button></div></div>
+              <div class="fl"><div class="fl-lbl">Win probability</div><div class="pbar-track"><div class="pbar-fill" style="width:16.7%"></div></div><div class="pbar-meta"><span>0%</span><span>16.7%</span><span>100%</span></div></div>
+              <div id="st-1"></div><div id="res-1"></div><div id="err-1"></div>
             </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:7px">
-            <div class="gc-tags">
-              <span class="tag tag-g">5.7× payout</span>
-              <span class="tag tag-b">16.7% odds</span>
-            </div>
-            <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
+            <div><div class="bet-panel">
+              <div><div class="bet-field-lbl">Bet amount</div><div class="bet-wrap"><div class="bet-curr">ETH</div><input class="bet-in" type="number" id="bet-1" value="0.001" min="0.0001" max="0.1" step="0.0001" oninput="updPayout(1)"/></div></div>
+              <div><div class="bet-field-lbl">Quick bet</div><div class="qbets"><button class="qb" onclick="qbet(1,'0.0001')">0.0001</button><button class="qb" onclick="qbet(1,'0.001')">0.001</button><button class="qb" onclick="qbet(1,'0.01')">0.01</button><button class="qb" onclick="qbet(1,'0.05')">0.05</button></div></div>
+              <div class="payout-row"><span class="payout-lbl">Potential payout</span><span class="payout-val" id="po-1">0.0057 ETH</span></div>
+              <button class="play-btn" id="pb-1" onclick="doPlay(1)">Roll dice</button>
+            </div></div>
+          </div></div>
         </div>
-        <div class="gc-body">
-          <div class="gc-inner">
-            <div>
-              <div class="vis" id="vis-1">
-                <div style="perspective:300px">
-                  <div class="dice-3d" id="dice-el">
-                    <div class="die-face f1"><div class="dots" style="grid-template-columns:1fr;grid-template-rows:1fr;place-items:center"><div class="dot"></div></div></div>
-                    <div class="die-face f2"><div class="dots" style="grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr"><div class="dot" style="align-self:start;justify-self:start"></div><div></div><div></div><div class="dot" style="align-self:end;justify-self:end"></div></div></div>
-                    <div class="die-face f3"><div class="dots" style="grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr 1fr"><div class="dot" style="align-self:start;justify-self:start"></div><div></div><div></div><div class="dot" style="place-self:center;grid-column:span 2"></div><div></div><div class="dot" style="align-self:end;justify-self:end"></div></div></div>
-                    <div class="die-face f4"><div class="dots" style="grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
-                    <div class="die-face f5"><div class="dots" style="grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr 1fr"><div class="dot"></div><div class="dot"></div><div></div><div class="dot" style="place-self:center;grid-column:span 2"></div><div class="dot"></div><div class="dot"></div></div></div>
-                    <div class="die-face f6"><div class="dots" style="grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr 1fr"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
-                  </div>
-                </div>
-              </div>
-              <div class="fl">
-                <div class="fl-lbl">Your number</div>
-                <div class="choice-row" id="dice-row">
-                  <button class="ch" onclick="pickDice(1)">1</button>
-                  <button class="ch" onclick="pickDice(2)">2</button>
-                  <button class="ch" onclick="pickDice(3)">3</button>
-                  <button class="ch" onclick="pickDice(4)">4</button>
-                  <button class="ch" onclick="pickDice(5)">5</button>
-                  <button class="ch on" onclick="pickDice(6)">6</button>
-                </div>
-              </div>
-              <div class="fl">
-                <div class="fl-lbl">Win probability</div>
-                <div class="pbar-track"><div class="pbar-fill" style="width:16.7%"></div></div>
-                <div class="pbar-meta"><span>0%</span><span>16.7%</span><span>100%</span></div>
-              </div>
-              <div id="st-1"></div>
-              <div id="res-1"></div>
-              <div id="err-1"></div>
-            </div>
-            <div>
-              <div class="bet-panel">
-                <div>
-                  <div class="bet-field-lbl">Bet amount</div>
-                  <div class="bet-wrap">
-                    <div class="bet-curr">ETH</div>
-                    <input class="bet-in" type="number" id="bet-1" value="0.001" min="0.0001" max="0.1" step="0.0001" oninput="updPayout(1)" />
-                  </div>
-                </div>
-                <div>
-                  <div class="bet-field-lbl">Quick bet</div>
-                  <div class="qbets">
-                    <button class="qb" onclick="qbet(1,'0.0001')">0.0001</button>
-                    <button class="qb" onclick="qbet(1,'0.001')">0.001</button>
-                    <button class="qb" onclick="qbet(1,'0.01')">0.01</button>
-                    <button class="qb" onclick="qbet(1,'0.05')">0.05</button>
-                  </div>
-                </div>
-                <div class="payout-row">
-                  <span class="payout-lbl">Potential payout</span>
-                  <span class="payout-val" id="po-1">0.0057 ETH</span>
-                </div>
-                <button class="play-btn" id="pb-1" onclick="doPlay(1)">Roll dice</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- SPIN WHEEL -->
-      <div class="gc" id="gc-2">
-        <div class="gc-head" onclick="toggleGc(2)">
-          <div class="gc-hl">
-            <div class="gc-ico">🎡</div>
-            <div>
-              <div class="gc-name">Spin Wheel</div>
-              <div class="gc-sub">Pure chance · jackpot 1-in-8</div>
-            </div>
+        <!-- SPIN WHEEL -->
+        <div class="gc" id="gc-2">
+          <div class="gc-head" onclick="toggleGc(2)">
+            <div class="gc-hl"><div class="gc-ico">🎡</div><div><div class="gc-name">Spin Wheel</div><div class="gc-sub">Pure chance · jackpot 1-in-8</div></div></div>
+            <div style="display:flex;align-items:center;gap:7px"><div class="gc-tags"><span class="tag tag-a">4.75× jackpot</span><span class="tag tag-g">1.9× win</span></div><svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
           </div>
-          <div style="display:flex;align-items:center;gap:7px">
-            <div class="gc-tags">
-              <span class="tag tag-a">4.75× jackpot</span>
-              <span class="tag tag-g">1.9× win</span>
-            </div>
-            <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-        </div>
-        <div class="gc-body">
-          <div class="gc-inner">
+          <div class="gc-body"><div class="gc-inner">
             <div>
-              <div class="vis" id="vis-2">
-                <div class="wheel-container">
-                  <div class="wheel-pointer"></div>
-                  <svg class="wheel-svg" id="wheel-el" viewBox="0 0 120 120">
-                    <g transform="translate(60,60)">
-                      <!-- 8 segments: 1 jackpot(gold), 2 win(green), 5 lose(dark) -->
-                      <path d="M0,0 L0,-58 A58,58 0 0,1 41,-41 Z" fill="#f59e0b" stroke="#1e1e28" stroke-width="1.5"/>
-                      <path d="M0,0 L41,-41 A58,58 0 0,1 58,0 Z" fill="#374151" stroke="#1e1e28" stroke-width="1.5"/>
-                      <path d="M0,0 L58,0 A58,58 0 0,1 41,41 Z" fill="#34d399" stroke="#1e1e28" stroke-width="1.5"/>
-                      <path d="M0,0 L41,41 A58,58 0 0,1 0,58 Z" fill="#374151" stroke="#1e1e28" stroke-width="1.5"/>
-                      <path d="M0,0 L0,58 A58,58 0 0,1 -41,41 Z" fill="#374151" stroke="#1e1e28" stroke-width="1.5"/>
-                      <path d="M0,0 L-41,41 A58,58 0 0,1 -58,0 Z" fill="#374151" stroke="#1e1e28" stroke-width="1.5"/>
-                      <path d="M0,0 L-58,0 A58,58 0 0,1 -41,-41 Z" fill="#34d399" stroke="#1e1e28" stroke-width="1.5"/>
-                      <path d="M0,0 L-41,-41 A58,58 0 0,1 0,-58 Z" fill="#374151" stroke="#1e1e28" stroke-width="1.5"/>
-                      <!-- labels -->
-                      <text x="14" y="-28" font-size="8" fill="#fff" font-weight="bold" transform="rotate(-22.5)">🏆</text>
-                      <text x="14" y="-28" font-size="8" fill="#6b7280" transform="rotate(22.5)">✕</text>
-                      <text x="14" y="-28" font-size="8" fill="#fff" transform="rotate(67.5)">✓</text>
-                      <text x="14" y="-28" font-size="8" fill="#6b7280" transform="rotate(112.5)">✕</text>
-                      <text x="14" y="-28" font-size="8" fill="#6b7280" transform="rotate(157.5)">✕</text>
-                      <text x="14" y="-28" font-size="8" fill="#6b7280" transform="rotate(202.5)">✕</text>
-                      <text x="14" y="-28" font-size="8" fill="#fff" transform="rotate(247.5)">✓</text>
-                      <text x="14" y="-28" font-size="8" fill="#6b7280" transform="rotate(292.5)">✕</text>
-                      <circle r="10" fill="#111117" stroke="#374151" stroke-width="2"/>
+              <div class="vis vis-wheel" id="vis-2">
+                <div class="wheel-scene">
+                  <!-- Pointer pin -->
+                  <svg class="wheel-pin" width="32" height="38" viewBox="0 0 26 30">
+                    <defs>
+                      <linearGradient id="pinG" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#fef3c7"/>
+                        <stop offset="100%" stop-color="#f59e0b"/>
+                      </linearGradient>
+                    </defs>
+                    <polygon points="13,29 1,5 25,5" fill="url(#pinG)" stroke="#78350f" stroke-width="1.2" stroke-linejoin="round"/>
+                    <circle cx="13" cy="6" r="4.5" fill="#fde68a" stroke="#78350f" stroke-width="1.2"/>
+                  </svg>
+                  <!-- Wheel SVG -->
+                  <svg id="wheel-el" class="wheel-svg-el" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <!-- Jackpot gold gradient -->
+                      <radialGradient id="gJ" cx="60%" cy="30%" r="80%">
+                        <stop offset="0%" stop-color="#fef3c7"/>
+                        <stop offset="60%" stop-color="#f59e0b"/>
+                        <stop offset="100%" stop-color="#92400e"/>
+                      </radialGradient>
+                      <!-- Win green gradient -->
+                      <radialGradient id="gW" cx="60%" cy="30%" r="80%">
+                        <stop offset="0%" stop-color="#d1fae5"/>
+                        <stop offset="60%" stop-color="#10b981"/>
+                        <stop offset="100%" stop-color="#064e3b"/>
+                      </radialGradient>
+                      <!-- Lose dark gradient A -->
+                      <radialGradient id="gL1" cx="40%" cy="30%" r="80%">
+                        <stop offset="0%" stop-color="#2d2b52"/>
+                        <stop offset="100%" stop-color="#12111e"/>
+                      </radialGradient>
+                      <!-- Lose dark gradient B (slight variation) -->
+                      <radialGradient id="gL2" cx="60%" cy="60%" r="80%">
+                        <stop offset="0%" stop-color="#26243e"/>
+                        <stop offset="100%" stop-color="#0e0d1a"/>
+                      </radialGradient>
+                      <!-- Hub gradient -->
+                      <radialGradient id="gHub" cx="40%" cy="30%" r="80%">
+                        <stop offset="0%" stop-color="#5b5590"/>
+                        <stop offset="100%" stop-color="#0d0c18"/>
+                      </radialGradient>
+                      <!-- Outer ring -->
+                      <linearGradient id="gRing" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#3a3660"/>
+                        <stop offset="50%" stop-color="#6c63ff" stop-opacity="0.6"/>
+                        <stop offset="100%" stop-color="#1e1c30"/>
+                      </linearGradient>
+                      <!-- Glow filter for win/jackpot labels -->
+                      <filter id="fGlow" x="-30%" y="-30%" width="160%" height="160%">
+                        <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                      </filter>
+                      <!-- Soft shadow on whole wheel -->
+                      <filter id="fShadow" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.5"/>
+                      </filter>
+                      <clipPath id="cWheel"><circle cx="120" cy="120" r="108"/></clipPath>
+                    </defs>
+
+                    <!-- Outer ring glow -->
+                    <circle cx="120" cy="120" r="119" fill="url(#gRing)" filter="url(#fShadow)"/>
+                    <circle cx="120" cy="120" r="112" fill="#0c0b18"/>
+
+                    <!--
+                      8 segments, each 45°, starting from top (270° in SVG coords = -90°).
+                      Segment i spans from angle (i*45 - 90)° to ((i+1)*45 - 90)°.
+                      Segment 0 = jackpot (gold), 1 = lose, 2 = win (green), 3 = lose,
+                      4 = lose, 5 = lose, 6 = win (green), 7 = lose.
+                      Arc points computed as: cx + r*cos(angle), cy + r*sin(angle)
+                      r=108, cx=cy=120
+                      Angles: -90,-45,0,45,90,135,180,225,270 degrees
+                      Points:
+                        -90° → (120, 12)
+                        -45° → (196.37, 43.63) ≈ (196.4, 43.6)
+                          0° → (228, 120)
+                         45° → (196.4, 196.4)
+                         90° → (120, 228)
+                        135° → (43.6, 196.4)
+                        180° → (12, 120)
+                        225° → (43.6, 43.6)
+                    -->
+                    <!-- Seg 0: jackpot (-90° to -45°), points: (120,12) → (196.4,43.6) -->
+                    <path d="M120,120 L120,12 A108,108 0 0,1 196.4,43.6 Z" fill="url(#gJ)" clip-path="url(#cWheel)"/>
+                    <!-- Seg 1: lose (-45° to 0°), points: (196.4,43.6) → (228,120) -->
+                    <path d="M120,120 L196.4,43.6 A108,108 0 0,1 228,120 Z" fill="url(#gL1)" clip-path="url(#cWheel)"/>
+                    <!-- Seg 2: win (0° to 45°), points: (228,120) → (196.4,196.4) -->
+                    <path d="M120,120 L228,120 A108,108 0 0,1 196.4,196.4 Z" fill="url(#gW)" clip-path="url(#cWheel)"/>
+                    <!-- Seg 3: lose (45° to 90°), points: (196.4,196.4) → (120,228) -->
+                    <path d="M120,120 L196.4,196.4 A108,108 0 0,1 120,228 Z" fill="url(#gL2)" clip-path="url(#cWheel)"/>
+                    <!-- Seg 4: lose (90° to 135°), points: (120,228) → (43.6,196.4) -->
+                    <path d="M120,120 L120,228 A108,108 0 0,1 43.6,196.4 Z" fill="url(#gL1)" clip-path="url(#cWheel)"/>
+                    <!-- Seg 5: lose (135° to 180°), points: (43.6,196.4) → (12,120) -->
+                    <path d="M120,120 L43.6,196.4 A108,108 0 0,1 12,120 Z" fill="url(#gL2)" clip-path="url(#cWheel)"/>
+                    <!-- Seg 6: win (180° to 225°), points: (12,120) → (43.6,43.6) -->
+                    <path d="M120,120 L12,120 A108,108 0 0,1 43.6,43.6 Z" fill="url(#gW)" clip-path="url(#cWheel)"/>
+                    <!-- Seg 7: lose (225° to 270°), points: (43.6,43.6) → (120,12) -->
+                    <path d="M120,120 L43.6,43.6 A108,108 0 0,1 120,12 Z" fill="url(#gL1)" clip-path="url(#cWheel)"/>
+
+                    <!-- Separator spoke lines -->
+                    <g stroke="rgba(255,255,255,0.10)" stroke-width="1.5" clip-path="url(#cWheel)">
+                      <line x1="120" y1="120" x2="120" y2="12"/>
+                      <line x1="120" y1="120" x2="196.4" y2="43.6"/>
+                      <line x1="120" y1="120" x2="228" y2="120"/>
+                      <line x1="120" y1="120" x2="196.4" y2="196.4"/>
+                      <line x1="120" y1="120" x2="120" y2="228"/>
+                      <line x1="120" y1="120" x2="43.6" y2="196.4"/>
+                      <line x1="120" y1="120" x2="12" y2="120"/>
+                      <line x1="120" y1="120" x2="43.6" y2="43.6"/>
                     </g>
+
+                    <!-- Sheen highlight on top edge of each segment -->
+                    <path d="M120,120 L120,12 A108,108 0 0,1 196.4,43.6 Z" fill="url(#gJ)" clip-path="url(#cWheel)" opacity="0.3"/>
+
+                    <!-- Segment labels -->
+                    <!-- Seg 0 jackpot: midpoint angle = -67.5° → text at r=72 -->
+                    <g filter="url(#fGlow)">
+                      <text transform="translate(120,120) rotate(-67.5) translate(0,-76)" text-anchor="middle" font-size="20" fill="#fef3c7" font-family="system-ui,sans-serif">🏆</text>
+                      <text transform="translate(120,120) rotate(-67.5) translate(0,-56)" text-anchor="middle" font-size="8" fill="#fde68a" font-weight="700" font-family="system-ui,sans-serif" letter-spacing="1">JACKPOT</text>
+                      <text transform="translate(120,120) rotate(-67.5) translate(0,-47)" text-anchor="middle" font-size="7" fill="#fcd34d" font-family="'DM Mono',monospace">4.75×</text>
+                    </g>
+                    <!-- Seg 1 lose: -22.5° -->
+                    <text transform="translate(120,120) rotate(-22.5) translate(0,-74)" text-anchor="middle" font-size="18" fill="rgba(255,255,255,0.18)" font-family="system-ui,sans-serif">✕</text>
+                    <!-- Seg 2 win: 22.5° -->
+                    <g filter="url(#fGlow)">
+                      <text transform="translate(120,120) rotate(22.5) translate(0,-76)" text-anchor="middle" font-size="18" fill="#d1fae5" font-family="system-ui,sans-serif">✓</text>
+                      <text transform="translate(120,120) rotate(22.5) translate(0,-57)" text-anchor="middle" font-size="8" fill="#6ee7b7" font-weight="700" font-family="system-ui,sans-serif" letter-spacing="1">WIN</text>
+                      <text transform="translate(120,120) rotate(22.5) translate(0,-48)" text-anchor="middle" font-size="7" fill="#34d399" font-family="'DM Mono',monospace">1.9×</text>
+                    </g>
+                    <!-- Seg 3 lose: 67.5° -->
+                    <text transform="translate(120,120) rotate(67.5) translate(0,-74)" text-anchor="middle" font-size="18" fill="rgba(255,255,255,0.18)" font-family="system-ui,sans-serif">✕</text>
+                    <!-- Seg 4 lose: 112.5° -->
+                    <text transform="translate(120,120) rotate(112.5) translate(0,-74)" text-anchor="middle" font-size="18" fill="rgba(255,255,255,0.18)" font-family="system-ui,sans-serif">✕</text>
+                    <!-- Seg 5 lose: 157.5° -->
+                    <text transform="translate(120,120) rotate(157.5) translate(0,-74)" text-anchor="middle" font-size="18" fill="rgba(255,255,255,0.18)" font-family="system-ui,sans-serif">✕</text>
+                    <!-- Seg 6 win: 202.5° -->
+                    <g filter="url(#fGlow)">
+                      <text transform="translate(120,120) rotate(202.5) translate(0,-76)" text-anchor="middle" font-size="18" fill="#d1fae5" font-family="system-ui,sans-serif">✓</text>
+                      <text transform="translate(120,120) rotate(202.5) translate(0,-57)" text-anchor="middle" font-size="8" fill="#6ee7b7" font-weight="700" font-family="system-ui,sans-serif" letter-spacing="1">WIN</text>
+                      <text transform="translate(120,120) rotate(202.5) translate(0,-48)" text-anchor="middle" font-size="7" fill="#34d399" font-family="'DM Mono',monospace">1.9×</text>
+                    </g>
+                    <!-- Seg 7 lose: 247.5° -->
+                    <text transform="translate(120,120) rotate(247.5) translate(0,-74)" text-anchor="middle" font-size="18" fill="rgba(255,255,255,0.18)" font-family="system-ui,sans-serif">✕</text>
+
+                    <!-- Rim accent dots at spoke intersections -->
+                    <g fill="rgba(255,255,255,0.22)" stroke="rgba(255,255,255,0.08)" stroke-width="1">
+                      <circle cx="120" cy="14" r="3.5"/>
+                      <circle cx="196.4" cy="43.6" r="3.5"/>
+                      <circle cx="226" cy="120" r="3.5"/>
+                      <circle cx="196.4" cy="196.4" r="3.5"/>
+                      <circle cx="120" cy="226" r="3.5"/>
+                      <circle cx="43.6" cy="196.4" r="3.5"/>
+                      <circle cx="14" cy="120" r="3.5"/>
+                      <circle cx="43.6" cy="43.6" r="3.5"/>
+                    </g>
+
+                    <!-- Inner rim ring -->
+                    <circle cx="120" cy="120" r="108" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1.5"/>
+                    <!-- Outer rim ring -->
+                    <circle cx="120" cy="120" r="111" fill="none" stroke="rgba(108,99,255,0.3)" stroke-width="1.5"/>
+
+                    <!-- Center hub -->
+                    <circle cx="120" cy="120" r="26" fill="url(#gHub)" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+                    <circle cx="120" cy="120" r="18" fill="#0a0918" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                    <!-- Hub accent ring -->
+                    <circle cx="120" cy="120" r="13" fill="none" stroke="rgba(108,99,255,0.4)" stroke-width="1.5"/>
+                    <!-- Hub bolt -->
+                    <circle cx="120" cy="120" r="6" fill="#6c63ff" opacity="0.9"/>
+                    <circle cx="120" cy="120" r="3.5" fill="#a8a3ff"/>
+                    <circle cx="118.5" cy="118.5" r="1" fill="rgba(255,255,255,0.6)"/>
                   </svg>
                 </div>
               </div>
               <div class="fl">
                 <div class="fl-lbl">Outcome distribution</div>
                 <div class="choice-row" style="margin-top:2px">
-                  <span class="tag tag-a">Jackpot 4.75× · 12.5%</span>
-                  <span class="tag tag-g">Win 1.9× · 25%</span>
-                  <span class="tag" style="color:var(--text-3);border-color:var(--border)">Lose · 62.5%</span>
+                  <span class="tag tag-a">🏆 Jackpot 4.75× · 12.5%</span>
+                  <span class="tag tag-g">✓ Win 1.9× · 25%</span>
+                  <span class="tag" style="color:var(--text-3);border-color:var(--border)">✕ Lose · 62.5%</span>
                 </div>
                 <div style="font-size:12px;color:var(--text-3);margin-top:10px">No choice required. Place your bet and spin.</div>
               </div>
-              <div id="st-2"></div>
-              <div id="res-2"></div>
-              <div id="err-2"></div>
+              <div id="st-2"></div><div id="res-2"></div><div id="err-2"></div>
             </div>
-            <div>
-              <div class="bet-panel">
-                <div>
-                  <div class="bet-field-lbl">Bet amount</div>
-                  <div class="bet-wrap">
-                    <div class="bet-curr">ETH</div>
-                    <input class="bet-in" type="number" id="bet-2" value="0.001" min="0.0001" max="0.1" step="0.0001" oninput="updPayout(2)" />
-                  </div>
-                </div>
-                <div>
-                  <div class="bet-field-lbl">Quick bet</div>
-                  <div class="qbets">
-                    <button class="qb" onclick="qbet(2,'0.0001')">0.0001</button>
-                    <button class="qb" onclick="qbet(2,'0.001')">0.001</button>
-                    <button class="qb" onclick="qbet(2,'0.01')">0.01</button>
-                    <button class="qb" onclick="qbet(2,'0.05')">0.05</button>
-                  </div>
-                </div>
-                <div class="payout-row">
-                  <span class="payout-lbl">Jackpot payout</span>
-                  <span class="payout-val" id="po-2">0.00475 ETH</span>
-                </div>
-                <button class="play-btn" id="pb-2" onclick="doPlay(2)">Spin wheel</button>
-              </div>
+            <div><div class="bet-panel">
+              <div><div class="bet-field-lbl">Bet amount</div><div class="bet-wrap"><div class="bet-curr">ETH</div><input class="bet-in" type="number" id="bet-2" value="0.001" min="0.0001" max="0.1" step="0.0001" oninput="updPayout(2)"/></div></div>
+              <div><div class="bet-field-lbl">Quick bet</div><div class="qbets"><button class="qb" onclick="qbet(2,'0.0001')">0.0001</button><button class="qb" onclick="qbet(2,'0.001')">0.001</button><button class="qb" onclick="qbet(2,'0.01')">0.01</button><button class="qb" onclick="qbet(2,'0.05')">0.05</button></div></div>
+              <div class="payout-row"><span class="payout-lbl">Jackpot payout</span><span class="payout-val" id="po-2">0.00475 ETH</span></div>
+              <button class="play-btn" id="pb-2" onclick="doPlay(2)">Spin wheel</button>
+            </div></div>
+          </div></div>
+        </div>
+
+        <!-- HISTORY -->
+        <div class="hist-card" id="hist-card" style="display:none">
+          <div class="hist-head">Play history</div>
+          <table class="hist-tbl">
+            <thead><tr><th>Game</th><th>Pick</th><th>Result</th><th>Payout</th><th>FUN</th><th>Outcome</th></tr></thead>
+            <tbody id="hist-body"></tbody>
+          </table>
+        </div>
+      </div><!-- /panel-games -->
+
+      <!-- DEX PANEL -->
+      <div id="panel-dex" style="display:none">
+        <div class="ph"><div class="ph-title">Swap</div><div class="ph-sub">Trade FUN ↔ ETH directly in the dapp</div></div>
+        <div class="dex-card">
+          <div class="dex-title">Token Swap</div>
+          <div class="dex-sub">Swap between FUN tokens and Arbitrum Sepolia ETH</div>
+          <!-- From -->
+          <div class="dex-token-box">
+            <div class="dex-box-row">
+              <span class="dex-box-lbl">You pay</span>
+              <span class="dex-box-bal" id="dex-from-bal" onclick="dexSetMax()">Balance: — <span style="color:var(--accent-lt)">Max</span></span>
+            </div>
+            <div class="dex-input-row">
+              <input class="dex-amount" id="dex-from-amt" type="number" placeholder="0.0" min="0" step="any" oninput="dexCalcOut()"/>
+              <div class="dex-token-badge"><div class="dex-token-dot" id="dex-from-dot">⟠</div><span class="dex-token-name" id="dex-from-name">ETH</span></div>
             </div>
           </div>
+          <!-- Arrow -->
+          <div class="dex-arrow-row">
+            <button class="dex-arrow-btn" onclick="dexFlip()" title="Flip">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+            </button>
+          </div>
+          <!-- To -->
+          <div class="dex-token-box">
+            <div class="dex-box-row">
+              <span class="dex-box-lbl">You receive</span>
+              <span class="dex-box-bal" id="dex-to-bal">Balance: —</span>
+            </div>
+            <div class="dex-input-row">
+              <input class="dex-amount" id="dex-to-amt" type="number" placeholder="0.0" min="0" step="any" readonly style="opacity:0.7;cursor:default"/>
+              <div class="dex-token-badge"><div class="dex-token-dot" id="dex-to-dot">🎮</div><span class="dex-token-name" id="dex-to-name">FUN</span></div>
+            </div>
+          </div>
+          <div class="dex-rate-row"><span>Exchange rate</span><span class="dex-rate-val" id="dex-rate">—</span></div>
+          <button class="dex-swap-btn" id="dex-swap-btn" onclick="doSwap()">Swap</button>
+          <div class="dex-status" id="dex-status"></div>
         </div>
-      </div>
+        <div class="dex-info-box" style="max-width:440px;margin:16px auto 0">
+          <strong>How it works</strong><br>
+          This DEX uses a fixed rate of <strong>1 ETH = 1,000 FUN</strong> with a 0.3% swap fee.
+          <strong>ETH→FUN</strong> sends ETH to the GameHub contract (which accepts it via its <code>receive()</code> function).
+          <strong>FUN→ETH</strong> approves and transfers FUN tokens back to the contract.
+          All transactions are on-chain on Arbitrum Sepolia.<br><br>
+          <strong>Note:</strong> This is a testnet DEX. Tokens and ETH have no real value.
+        </div>
+      </div><!-- /panel-dex -->
 
-      <!-- HISTORY -->
-      <div class="hist-card" id="hist-card" style="display:none">
-        <div class="hist-head">Play history</div>
-        <table class="hist-tbl">
-          <thead>
-            <tr>
-              <th>Game</th><th>Pick</th><th>Result</th>
-              <th>Payout</th><th>FUN</th><th>Outcome</th>
-            </tr>
-          </thead>
-          <tbody id="hist-body"></tbody>
-        </table>
-      </div>
+      <!-- POOL PANEL -->
+      <div id="panel-pool" style="display:none">
+        <div class="ph"><div class="ph-title">Liquidity Pool</div><div class="ph-sub">Provide FUN / ETH liquidity and earn swap fees</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+          <div class="stat"><div class="stat-lbl">Pool ETH</div><div class="stat-val c-amber" id="pool-eth-stat">—</div></div>
+          <div class="stat"><div class="stat-lbl">Pool FUN</div><div class="stat-val" id="pool-fun-stat">—</div></div>
+          <div class="stat"><div class="stat-lbl">Your LP tokens</div><div class="stat-val c-green" id="pool-lp-stat">—</div></div>
+          <div class="stat"><div class="stat-lbl">Your share</div><div class="stat-val" id="pool-share-stat">—</div></div>
+        </div>
 
-    </div>
-  </div>
-</div>
+        <!-- Add Liquidity -->
+        <div class="dex-card" style="margin-bottom:16px">
+          <div class="dex-title">Add Liquidity</div>
+          <div class="dex-sub">Deposit ETH + FUN at the current ratio to receive LP tokens</div>
+          <div class="dex-token-box">
+            <div class="dex-box-row">
+              <span class="dex-box-lbl">ETH amount</span>
+              <span class="dex-box-bal" id="pool-eth-bal" onclick="poolMaxEth()">Balance: — <span style="color:var(--accent-lt)">Max</span></span>
+            </div>
+            <div class="dex-input-row">
+              <input class="dex-amount" id="pool-eth-in" type="number" placeholder="0.0" min="0" step="any" oninput="poolCalcFun()"/>
+              <div class="dex-token-badge"><div class="dex-token-dot">⟠</div><span class="dex-token-name">ETH</span></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:center;margin:8px 0"><div style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--surface-3);display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:14px">+</div></div>
+          <div class="dex-token-box">
+            <div class="dex-box-row">
+              <span class="dex-box-lbl">FUN amount</span>
+              <span class="dex-box-bal" id="pool-fun-bal">Balance: —</span>
+            </div>
+            <div class="dex-input-row">
+              <input class="dex-amount" id="pool-fun-in" type="number" placeholder="0.0" min="0" step="any" readonly style="opacity:0.7;cursor:default"/>
+              <div class="dex-token-badge"><div class="dex-token-dot">🎮</div><span class="dex-token-name">FUN</span></div>
+            </div>
+          </div>
+          <button class="dex-swap-btn" id="pool-add-btn" onclick="doAddLiquidity()">Add Liquidity</button>
+          <div class="dex-status" id="pool-add-status"></div>
+        </div>
+
+        <!-- Remove Liquidity -->
+        <div class="dex-card">
+          <div class="dex-title">Remove Liquidity</div>
+          <div class="dex-sub">Burn LP tokens to reclaim your share of the pool</div>
+          <div class="dex-token-box">
+            <div class="dex-box-row">
+              <span class="dex-box-lbl">LP tokens to burn</span>
+              <span class="dex-box-bal" id="pool-lp-bal-rm" onclick="poolMaxLp()">Balance: — <span style="color:var(--accent-lt)">Max</span></span>
+            </div>
+            <div class="dex-input-row">
+              <input class="dex-amount" id="pool-lp-in" type="number" placeholder="0.0" min="0" step="any" oninput="poolCalcRemove()"/>
+              <div class="dex-token-badge"><div class="dex-token-dot">💧</div><span class="dex-token-name">LP</span></div>
+            </div>
+          </div>
+          <div class="dex-rate-row" style="margin-top:14px"><span>You receive (est.)</span><span class="dex-rate-val" id="pool-rm-est">—</span></div>
+          <button class="dex-swap-btn" id="pool-rm-btn" onclick="doRemoveLiquidity()">Remove Liquidity</button>
+          <div class="dex-status" id="pool-rm-status"></div>
+        </div>
+
+        <div class="dex-info-box" style="margin-top:16px">
+          <strong>How the pool works</strong><br>
+          This is a constant-product AMM (x × y = k) pool for FUN / ETH.
+          LP providers earn <strong>0.3% of every swap</strong> proportional to their share.
+          LP tokens represent your fractional ownership of the pool reserves.<br><br>
+          <strong>Contract:</strong> <code id="pool-addr-display">Loading…</code><br>
+          <a id="pool-explorer-link" href="#" target="_blank" style="color:var(--accent-lt);font-size:12px">View on Arbiscan ↗</a><br><br>
+          <strong>⚠️ Note:</strong> You need to deploy the <code>HubarbPool</code> contract first and set its address in <code>contracts.ts</code>. See the deploy guide below.
+        </div>
+
+        <!-- Deploy guide -->
+        <div class="dex-card" style="margin-top:16px">
+          <div class="dex-title" style="margin-bottom:12px">📋 Deploy the Pool Contract</div>
+          <div style="font-size:12px;color:var(--text-2);line-height:1.8">
+            <strong style="color:var(--text-1)">1. Copy the Solidity below into your contracts/ folder as <code>HubarbPool.sol</code></strong><br>
+            <strong style="color:var(--text-1)">2. Run:</strong> <code style="background:var(--surface-3);padding:2px 6px;border-radius:4px">npx hardhat run scripts/deployPool.js --network arbSepolia</code><br>
+            <strong style="color:var(--text-1)">3. Set <code>POOL_ADDRESS</code> in contracts.ts to the deployed address</strong><br>
+            <strong style="color:var(--text-1)">4. Call <code>pool.setTokens(FUN_ADDR, WETH_ADDR)</code> as owner to initialize</strong>
+          </div>
+          <div style="margin-top:14px;background:var(--surface-3);border:1px solid var(--border);border-radius:var(--r);padding:14px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text-2);line-height:1.8;white-space:pre-wrap;overflow-x:auto" id="pool-sol-code"></div>
+        </div>
+      </div><!-- /panel-pool -->
+
+    </div><!-- /game-view -->
+  </div><!-- /main -->
+</div><!-- /shell -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.9.0/ethers.umd.min.js"></script>
 <script>
 const HUB_ADDR = "0xF67dA5dE3b6c4D8675047eBf0DE71Dd9Ac96227C";
 const FUN_ADDR = "0x92E79A3f212f6BD696a2ddB3da374e7776B4daaC";
 const CHAIN_ID = 421614;
-
 const TOKEN_URL    = `https://sepolia.arbiscan.io/token/${FUN_ADDR}`;
 const EXPLORER_URL = `https://sepolia.arbiscan.io/address/${HUB_ADDR}`;
 
@@ -699,65 +700,97 @@ const HUB_ABI = [
   "function play(uint8 game, uint256 choice) external payable",
   "event GamePlayed(address indexed player, uint8 indexed game, uint256 choice, uint256 result, bool won, uint256 payout, uint256 funRewarded)",
 ];
-const FUN_ABI = ["function balanceOf(address) view returns (uint256)"];
-
-const MULT   = [1.9, 5.7, 4.75];
+const FUN_ABI = [
+  "function balanceOf(address) view returns (uint256)",
+  "function transfer(address to, uint256 amount) returns (bool)",
+  "function approve(address spender, uint256 amount) returns (bool)",
+  "function allowance(address owner, address spender) view returns (uint256)",
+];
+const MULT = [1.9, 5.7, 4.75];
 const GNAMES = ["Coin Flip","Dice Roll","Spin Wheel"];
 
 let provider, signer, hub, fun;
 let connected = false;
 let coinPick = 0, dicePick = 6;
 let hist = [], plays = 0, wins = 0;
+let dexDir = 0; // 0=ETH→FUN, 1=FUN→ETH
 
-// ── UI helpers ──────────────────────────────────────────────────────────────
+// ── Auto-reconnect on reload ──────────────────────────────────────────────────
+window.addEventListener('load', async () => {
+  // Restore tab from URL hash
+  const hash = location.hash.replace('#','');
+  const validTabs = ['games','dex','pool'];
+  if (validTabs.includes(hash)) window._pendingTab = hash;
+
+  if (localStorage.getItem('hubarb_connected') === 'true' && window.ethereum) {
+    try {
+      const accs = await window.ethereum.request({ method:'eth_accounts' });
+      if (accs && accs.length > 0) {
+        await doConnect(true);
+        if (window._pendingTab) { showTab(window._pendingTab); delete window._pendingTab; }
+      }
+    } catch(_){}
+  }
+});
+
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+function showTab(name) {
+  ['games','dex','pool'].forEach(t => {
+    document.getElementById('panel-'+t).style.display = name===t ? '' : 'none';
+    document.getElementById('tab-'+t).classList.toggle('active', name===t);
+  });
+  location.hash = name;
+  if (name === 'dex') dexRefreshBalances();
+  if (name === 'pool') poolRefresh();
+}
+
+// ── UI helpers ────────────────────────────────────────────────────────────────
 function toggleGc(i) { document.getElementById(`gc-${i}`).classList.toggle('open'); }
 function openGame(i) {
   const c = document.getElementById(`gc-${i}`);
   if (!c.classList.contains('open')) c.classList.add('open');
-  c.scrollIntoView({ behavior:'smooth', block:'center' });
+  c.scrollIntoView({behavior:'smooth',block:'center'});
 }
 function scrollToHistory() {
   const card = document.getElementById('hist-card');
   card.style.display = '';
-  card.scrollIntoView({ behavior:'smooth', block:'start' });
+  card.scrollIntoView({behavior:'smooth',block:'start'});
 }
-
 function updPayout(i) {
-  const v = parseFloat(document.getElementById(`bet-${i}`).value) || 0;
-  document.getElementById(`po-${i}`).textContent = (v * MULT[i]).toFixed(6) + ' ETH';
+  const v = parseFloat(document.getElementById(`bet-${i}`).value)||0;
+  document.getElementById(`po-${i}`).textContent = (v*MULT[i]).toFixed(6)+' ETH';
 }
-function qbet(i, v) { document.getElementById(`bet-${i}`).value = v; updPayout(i); }
-
+function qbet(i,v) { document.getElementById(`bet-${i}`).value=v; updPayout(i); }
 function pickCoin(v) {
-  coinPick = v;
-  document.getElementById('c0-0').className = v===0 ? 'ch on' : 'ch';
-  document.getElementById('c0-1').className = v===1 ? 'ch on' : 'ch';
+  coinPick=v;
+  document.getElementById('c0-0').className=v===0?'ch on':'ch';
+  document.getElementById('c0-1').className=v===1?'ch on':'ch';
 }
 function pickDice(v) {
-  dicePick = v;
-  document.querySelectorAll('#dice-row .ch').forEach((b,i) => {
-    b.className = (i+1===v) ? 'ch on' : 'ch';
-  });
+  dicePick=v;
+  document.querySelectorAll('#dice-row .ch').forEach((b,i)=>{ b.className=(i+1===v)?'ch on':'ch'; });
 }
 
-// ── Wallet ───────────────────────────────────────────────────────────────────
+// ── Wallet ────────────────────────────────────────────────────────────────────
 async function handleConnect() {
   if (!window.ethereum) { alert("Install MetaMask to play."); return; }
-  if (!connected) await doConnect();
+  if (!connected) await doConnect(false);
 }
 
-async function doConnect() {
+async function doConnect(silent=false) {
   try {
     provider = new ethers.BrowserProvider(window.ethereum);
-    await provider.send("eth_requestAccounts",[]);
+    if (!silent) await provider.send("eth_requestAccounts",[]);
     signer = await provider.getSigner();
     const addr = await signer.getAddress();
     const net  = await provider.getNetwork();
-    connected  = true;
+    connected = true;
+    localStorage.setItem('hubarb_connected','true');
 
     const btn = document.getElementById('connect-btn');
     btn.textContent = addr.slice(0,6)+'…'+addr.slice(-4);
     btn.classList.add('connected');
+    document.getElementById('disconnect-btn').style.display = 'inline-flex';
     document.getElementById('net-dot').classList.add('live');
     document.getElementById('no-wallet').style.display = 'none';
     document.getElementById('game-view').style.display = '';
@@ -765,23 +798,43 @@ async function doConnect() {
     if (Number(net.chainId) !== CHAIN_ID) {
       document.getElementById('net-warn').style.display = 'flex';
       try {
-        await window.ethereum.request({
-          method:'wallet_switchEthereumChain',
-          params:[{chainId:'0x'+CHAIN_ID.toString(16)}]
-        });
+        await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x'+CHAIN_ID.toString(16)}]});
       } catch(_){}
     }
 
     hub = new ethers.Contract(HUB_ADDR, HUB_ABI, signer);
-    fun = new ethers.Contract(FUN_ADDR, FUN_ABI, provider);
+    fun = new ethers.Contract(FUN_ADDR, FUN_ABI, signer);
     document.getElementById('token-link').href    = TOKEN_URL;
     document.getElementById('explorer-link').href = EXPLORER_URL;
-
     await refreshFun();
     setInterval(refreshFun, 14000);
+
+    window.ethereum.removeAllListeners?.('chainChanged');
+    window.ethereum.removeAllListeners?.('accountsChanged');
     window.ethereum.on('chainChanged', ()=>location.reload());
-    window.ethereum.on('accountsChanged', ()=>location.reload());
-  } catch(e) { alert("Connection error: "+e.message); }
+    window.ethereum.on('accountsChanged', (accs)=>{ if(accs.length===0) doDisconnect(); else location.reload(); });
+  } catch(e) { if(!silent) alert("Connection error: "+e.message); }
+}
+
+function doDisconnect() {
+  // Request wallet to revoke permission (MetaMask EIP-2255)
+  if (window.ethereum) {
+    window.ethereum.request({method:'wallet_revokePermissions',params:[{eth_accounts:{}}]}).catch(()=>{});
+  }
+  connected = false;
+  provider = signer = hub = fun = null;
+  localStorage.removeItem('hubarb_connected');
+
+  const btn = document.getElementById('connect-btn');
+  btn.textContent = 'Connect wallet';
+  btn.classList.remove('connected');
+  document.getElementById('disconnect-btn').style.display = 'none';
+  document.getElementById('net-dot').classList.remove('live');
+  document.getElementById('net-warn').style.display = 'none';
+  document.getElementById('no-wallet').style.display = '';
+  document.getElementById('game-view').style.display = 'none';
+  document.getElementById('s-bal').innerHTML = '0.00<small>FUN</small>';
+  document.getElementById('s-fun').textContent = '0.00';
 }
 
 async function refreshFun() {
@@ -794,180 +847,492 @@ async function refreshFun() {
   } catch(_){}
 }
 
-// ── Animations ───────────────────────────────────────────────────────────────
+// ── Animations ────────────────────────────────────────────────────────────────
 function animateCoin() {
-  return new Promise(resolve => {
-    const el = document.getElementById('coin-el');
-    el.className = 'coin';
-    void el.offsetWidth; // reflow
-    el.classList.add('flipping');
-    setTimeout(resolve, 1700);
+  return new Promise(r=>{
+    const el=document.getElementById('coin-el');
+    el.className='coin'; void el.offsetWidth; el.classList.add('flipping');
+    setTimeout(r,1700);
   });
 }
-
 function showCoinResult(result) {
-  const el = document.getElementById('coin-el');
-  el.className = result === 0 ? 'coin heads-result' : 'coin tails-result';
+  document.getElementById('coin-el').className = result===0?'coin heads-result':'coin tails-result';
 }
-
 function animateDice() {
-  return new Promise(resolve => {
-    const el = document.getElementById('dice-el');
-    el.classList.remove('rolling');
-    void el.offsetWidth;
-    el.classList.add('rolling');
-    setTimeout(resolve, 1500);
+  return new Promise(r=>{
+    const el=document.getElementById('dice-el');
+    el.classList.remove('rolling'); void el.offsetWidth; el.classList.add('rolling');
+    setTimeout(r,1500);
   });
 }
-
 function showDiceResult(result) {
-  const el = document.getElementById('dice-el');
-  el.classList.remove('rolling');
-  // Rotate to show correct face on top
-  const faceRotations = {
-    1: 'rotateX(0deg) rotateY(0deg)',
-    2: 'rotateX(0deg) rotateY(-90deg)',
-    3: 'rotateX(90deg) rotateY(0deg)',
-    4: 'rotateX(-90deg) rotateY(0deg)',
-    5: 'rotateX(0deg) rotateY(90deg)',
-    6: 'rotateX(0deg) rotateY(180deg)',
-  };
-  el.style.transition = 'transform 0.4s ease';
-  el.style.transform = faceRotations[result] || faceRotations[1];
+  const el=document.getElementById('dice-el'); el.classList.remove('rolling');
+  const f={1:'rotateX(0)rotateY(0)',2:'rotateX(0)rotateY(-90deg)',3:'rotateX(90deg)rotateY(0)',4:'rotateX(-90deg)rotateY(0)',5:'rotateX(0)rotateY(90deg)',6:'rotateX(0)rotateY(180deg)'};
+  el.style.transition='transform 0.4s ease'; el.style.transform=f[result]||f[1];
 }
-
 function animateWheel(result) {
-  return new Promise(resolve => {
-    const el = document.getElementById('wheel-el');
-    // Each segment is 45deg. Map result to segment angle so pointer lands on it.
-    // Segment 0=jackpot is at top (0deg). We spin multiple full rotations + offset.
-    const segmentAngle = result * 45;
-    const totalSpin = 1440 + segmentAngle; // 4 full rotations + land on segment
-    el.style.setProperty('--spin-deg', totalSpin + 'deg');
-    el.classList.remove('spinning');
-    void el.offsetWidth;
-    el.classList.add('spinning');
-    setTimeout(resolve, 2100);
+  return new Promise(r=>{
+    const el=document.getElementById('wheel-el');
+    // Segment midpoint angle (from top, clockwise): result*45 + 22.5
+    // To land pointer on segment, we rotate wheel backwards by that angle
+    const segMid = result * 45 + 22.5;
+    const landAngle = (360 - (segMid % 360)) % 360;
+    const totalSpin = 1800 + landAngle; // 5 full rotations + landing offset
+    el.style.setProperty('--spin-deg', totalSpin+'deg');
+    el.classList.remove('spinning'); void el.offsetWidth; el.classList.add('spinning');
+    setTimeout(r, 3200);
   });
 }
 
-// ── Play ─────────────────────────────────────────────────────────────────────
+// ── Play ──────────────────────────────────────────────────────────────────────
 async function doPlay(gi) {
   if (!connected) { alert("Connect wallet first."); return; }
-  const bet = document.getElementById(`bet-${gi}`).value;
-  const wei = ethers.parseEther(bet);
-  const ch  = gi===0 ? coinPick : gi===1 ? dicePick : 0;
-
-  ['st','res','err'].forEach(p => { document.getElementById(`${p}-${gi}`).innerHTML=''; });
-  const btn = document.getElementById(`pb-${gi}`);
-  btn.disabled = true;
-
+  const bet=document.getElementById(`bet-${gi}`).value;
+  const wei=ethers.parseEther(bet);
+  const ch=gi===0?coinPick:gi===1?dicePick:0;
+  ['st','res','err'].forEach(p=>{ document.getElementById(`${p}-${gi}`).innerHTML=''; });
+  const btn=document.getElementById(`pb-${gi}`); btn.disabled=true;
   try {
-    setSt(gi, "Waiting for wallet…");
-    // Spin Wheel (gi===2) uses a manual gasLimit to bypass ethers estimateGas,
-    // which can revert during simulation if house balance < max jackpot payout.
-    const txOpts = { value: wei };
-    if (gi === 2) txOpts.gasLimit = 200000n;
-    const tx = await hub.play(gi, ch, txOpts);
-
-    // Transaction submitted — show confirming state and start animation
-    setSt(gi, "Confirming on-chain…", true);
-
-    // Start animation while waiting for confirmation
-    let animPromise;
-    if (gi === 0) animPromise = animateCoin();
-    else if (gi === 1) animPromise = animateDice();
-    else animPromise = Promise.resolve(); // wheel animates after result
-
-    const rx = await tx.wait();
-
-    // Parse result from logs
-    let out = { won:false, result:0, payout:0n, funRewarded:0n };
-    const iface = new ethers.Interface(HUB_ABI);
-    for (const log of rx.logs) {
-      try {
-        const p = iface.parseLog(log);
-        if (p?.name==="GamePlayed") {
-          out = { won:p.args.won, result:Number(p.args.result), payout:p.args.payout, funRewarded:p.args.funRewarded };
-        }
-      } catch(_){}
+    setSt(gi,"Waiting for wallet…");
+    const txOpts={value:wei};
+    if(gi===2) txOpts.gasLimit=200000n;
+    const tx=await hub.play(gi,ch,txOpts);
+    setSt(gi,"Confirming on-chain…",true);
+    let animP;
+    if(gi===0) animP=animateCoin();
+    else if(gi===1) animP=animateDice();
+    else animP=Promise.resolve();
+    const rx=await tx.wait();
+    let out={won:false,result:0,payout:0n,funRewarded:0n};
+    const iface=new ethers.Interface(HUB_ABI);
+    for(const log of rx.logs){
+      try{ const p=iface.parseLog(log); if(p?.name==="GamePlayed") out={won:p.args.won,result:Number(p.args.result),payout:p.args.payout,funRewarded:p.args.funRewarded}; }catch(_){}
     }
-
-    // Wait for animation to finish before showing result
-    await animPromise;
-
-    // Show final animation state based on result
-    if (gi === 0) showCoinResult(out.result);
-    else if (gi === 1) showDiceResult(out.result);
+    await animP;
+    if(gi===0) showCoinResult(out.result);
+    else if(gi===1) showDiceResult(out.result);
     else await animateWheel(out.result);
-
-    clearSt(gi);
-    showRes(gi, out, bet, ch);
-    updStats(out.won);
-    addHist(gi, ch, out);
+    clearSt(gi); showRes(gi,out,bet,ch); updStats(out.won); addHist(gi,ch,out);
     await refreshFun();
-
   } catch(e) {
     clearSt(gi);
-    let msg = e.reason || e.shortMessage || e.message || "Transaction failed";
-    if (msg.includes("insufficient house") || msg.includes("CALL_EXCEPTION") || msg.includes("estimateGas")) msg = "House balance too low — try again later.";
-    if (msg.includes("rejected")||msg.includes("denied")) msg = "Transaction rejected.";
-    document.getElementById(`err-${gi}`).innerHTML = `<div class="err-line">${msg}</div>`;
-  } finally {
-    btn.disabled = false;
-  }
+    let msg=e.reason||e.shortMessage||e.message||"Transaction failed";
+    if(msg.includes("insufficient house")||msg.includes("CALL_EXCEPTION")||msg.includes("estimateGas")) msg="House balance too low — try again later.";
+    if(msg.includes("rejected")||msg.includes("denied")) msg="Transaction rejected.";
+    document.getElementById(`err-${gi}`).innerHTML=`<div class="err-line">${msg}</div>`;
+  } finally { btn.disabled=false; }
 }
 
-function setSt(i, msg, spin=false) {
-  document.getElementById(`st-${i}`).innerHTML = `
-    <div class="status-line">
-      ${spin ? '<div class="spin"></div>' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'}
-      ${msg}
-    </div>`;
+function setSt(i,msg,spin=false) {
+  document.getElementById(`st-${i}`).innerHTML=`<div class="status-line">${spin?'<div class="spin"></div>':'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'}${msg}</div>`;
 }
-function clearSt(i) { document.getElementById(`st-${i}`).innerHTML = ''; }
-
-function showRes(gi, {won, result, payout, funRewarded}, bet, ch) {
-  const pFmt = parseFloat(ethers.formatEther(payout)).toFixed(6);
-  const fFmt = parseFloat(ethers.formatEther(funRewarded)).toFixed(2);
-  const chL  = gi===0 ? (ch===0?'Heads':'Tails') : gi===1 ? `${ch}` : '—';
-  const rL   = gi===0 ? (result===0?'Heads':'Tails') : gi===1 ? `${result}` : result===0?'Jackpot':result<3?'Win':'No win';
-
-  document.getElementById(`res-${gi}`).innerHTML = `
-    <div class="result-banner ${won?'win':'lose'}">
-      <div class="r-ico">${won ? '✅' : '❌'}</div>
-      <div class="r-body">
-        <div class="r-head">${won ? 'You won!' : 'You lost'}</div>
-        <div class="r-detail">Rolled ${rL} · picked ${chL}${won ? ` · +${pFmt} ETH` : ''}${won && funRewarded>0n ? ` · +${fFmt} FUN` : ''}</div>
-      </div>
-    </div>`;
+function clearSt(i) { document.getElementById(`st-${i}`).innerHTML=''; }
+function showRes(gi,{won,result,payout,funRewarded},bet,ch) {
+  const pFmt=parseFloat(ethers.formatEther(payout)).toFixed(6);
+  const fFmt=parseFloat(ethers.formatEther(funRewarded)).toFixed(2);
+  const chL=gi===0?(ch===0?'Heads':'Tails'):gi===1?`${ch}`:'—';
+  const rL=gi===0?(result===0?'Heads':'Tails'):gi===1?`${result}`:result===0?'Jackpot':result<3?'Win':'No win';
+  document.getElementById(`res-${gi}`).innerHTML=`<div class="result-banner ${won?'win':'lose'}"><div class="r-ico">${won?'✅':'❌'}</div><div class="r-body"><div class="r-head">${won?'You won!':'You lost'}</div><div class="r-detail">Rolled ${rL} · picked ${chL}${won?` · +${pFmt} ETH`:''}${won&&funRewarded>0n?` · +${fFmt} FUN`:''}</div></div></div>`;
 }
-
 function updStats(won) {
-  plays++; if (won) wins++;
-  document.getElementById('s-played').textContent = plays;
-  document.getElementById('s-wr').textContent = plays>0 ? ((wins/plays*100).toFixed(0)+'%') : '—';
+  plays++; if(won) wins++;
+  document.getElementById('s-played').textContent=plays;
+  document.getElementById('s-wr').textContent=plays>0?((wins/plays*100).toFixed(0)+'%'):'—';
+}
+function addHist(gi,ch,{won,result,payout,funRewarded}) {
+  const pFmt=parseFloat(ethers.formatEther(payout)).toFixed(6);
+  const fFmt=parseFloat(ethers.formatEther(funRewarded)).toFixed(2);
+  const chL=gi===0?(ch===0?'Heads':'Tails'):gi===1?`${ch}`:'—';
+  const rL=gi===0?(result===0?'Heads':'Tails'):gi===1?`${result}`:result===0?'Jackpot':result<3?'Win':'No win';
+  hist.unshift({gi,chL,rL,won,pFmt,fFmt});
+  if(hist.length>20) hist.pop();
+  document.getElementById('hist-card').style.display='';
+  document.getElementById('hist-body').innerHTML=hist.map(h=>`<tr><td>${GNAMES[h.gi]}</td><td class="mono">${h.chL}</td><td class="mono">${h.rL}</td><td class="mono">${h.won?`+${h.pFmt} ETH`:'—'}</td><td class="mono">${h.won&&h.fFmt!=='0.00'?`+${h.fFmt} FUN`:'—'}</td><td><span class="badge ${h.won?'badge-win':'badge-lose'}">${h.won?'Win':'Lose'}</span></td></tr>`).join('');
 }
 
-function addHist(gi, ch, {won, result, payout, funRewarded}) {
-  const pFmt = parseFloat(ethers.formatEther(payout)).toFixed(6);
-  const fFmt = parseFloat(ethers.formatEther(funRewarded)).toFixed(2);
-  const chL  = gi===0 ? (ch===0?'Heads':'Tails') : gi===1 ? `${ch}` : '—';
-  const rL   = gi===0 ? (result===0?'Heads':'Tails') : gi===1 ? `${result}` : result===0?'Jackpot':result<3?'Win':'No win';
-  hist.unshift({gi, chL, rL, won, pFmt, fFmt});
-  if (hist.length > 20) hist.pop();
+// ── DEX ───────────────────────────────────────────────────────────────────────
+async function dexRefreshBalances() {
+  if (!signer||!fun) return;
+  try {
+    const addr=await signer.getAddress();
+    const funBal=await fun.balanceOf(addr);
+    const ethBal=await provider.getBalance(addr);
+    const funFmt=parseFloat(ethers.formatEther(funBal)).toFixed(2);
+    const ethFmt=parseFloat(ethers.formatEther(ethBal)).toFixed(6);
+    if(dexDir===0) {
+      document.getElementById('dex-from-bal').innerHTML=`Balance: ${ethFmt} ETH <span style="color:var(--accent-lt)">Max</span>`;
+      document.getElementById('dex-to-bal').textContent=`Balance: ${funFmt} FUN`;
+    } else {
+      document.getElementById('dex-from-bal').innerHTML=`Balance: ${funFmt} FUN <span style="color:var(--accent-lt)">Max</span>`;
+      document.getElementById('dex-to-bal').textContent=`Balance: ${ethFmt} ETH`;
+    }
+    dexCalcOut();
+  } catch(_){}
+}
+function dexCalcOut() {
+  const raw=parseFloat(document.getElementById('dex-from-amt').value)||0;
+  if(raw<=0){ document.getElementById('dex-to-amt').value=''; document.getElementById('dex-rate').textContent='—'; return; }
+  const net=raw*0.997;
+  let out,rate;
+  if(dexDir===0){ out=net*1000; rate='1 ETH = 1,000 FUN'; }
+  else          { out=net/1000; rate='1 FUN = 0.001 ETH'; }
+  document.getElementById('dex-to-amt').value=out.toFixed(6);
+  document.getElementById('dex-rate').textContent=rate+' (0.3% fee)';
+}
+function dexFlip() {
+  dexDir=dexDir===0?1:0;
+  document.getElementById('dex-from-name').textContent=dexDir===0?'ETH':'FUN';
+  document.getElementById('dex-to-name').textContent  =dexDir===0?'FUN':'ETH';
+  document.getElementById('dex-from-dot').textContent =dexDir===0?'⟠':'🎮';
+  document.getElementById('dex-to-dot').textContent   =dexDir===0?'🎮':'⟠';
+  document.getElementById('dex-from-amt').value='';
+  document.getElementById('dex-to-amt').value='';
+  dexRefreshBalances();
+}
+async function dexSetMax() {
+  if(!signer||!fun) return;
+  try {
+    const addr=await signer.getAddress();
+    if(dexDir===0) {
+      const ethBal=await provider.getBalance(addr);
+      const reserve=ethers.parseEther('0.005');
+      const max=ethBal>reserve?ethBal-reserve:0n;
+      document.getElementById('dex-from-amt').value=parseFloat(ethers.formatEther(max)).toFixed(6);
+    } else {
+      const funBal=await fun.balanceOf(addr);
+      document.getElementById('dex-from-amt').value=parseFloat(ethers.formatEther(funBal)).toFixed(2);
+    }
+    dexCalcOut();
+  } catch(_){}
+}
+function dexSetStatus(type,msg) {
+  const el=document.getElementById('dex-status');
+  el.className=`dex-status ${type}`;
+  el.innerHTML=type==='info'?`<div class="spin"></div>${msg}`:msg;
+}
+function dexClearStatus() {
+  const el=document.getElementById('dex-status');
+  el.className='dex-status'; el.innerHTML='';
+}
+async function doSwap() {
+  if(!connected){ alert("Connect wallet first."); return; }
+  const fromAmt=parseFloat(document.getElementById('dex-from-amt').value);
+  if(!fromAmt||fromAmt<=0){ dexSetStatus('error','Enter an amount to swap.'); return; }
+  const btn=document.getElementById('dex-swap-btn'); btn.disabled=true;
+  try {
+    if(dexDir===0) {
+      // ETH → FUN: send ETH to GameHub contract
+      dexSetStatus('info','Waiting for wallet approval…');
+      const wei=ethers.parseEther(fromAmt.toString());
+      const tx=await signer.sendTransaction({to:HUB_ADDR,value:wei,gasLimit:80000n});
+      dexSetStatus('info','Confirming transaction…');
+      await tx.wait();
+      const funOut=(fromAmt*0.997*1000).toFixed(2);
+      dexSetStatus('ok',`✅ Swapped ${fromAmt} ETH → ${funOut} FUN &nbsp;·&nbsp; <a href="https://sepolia.arbiscan.io/tx/${tx.hash}" target="_blank" style="color:var(--green);text-decoration:underline">View tx ↗</a>`);
+    } else {
+      // FUN → ETH: approve then transfer FUN tokens to contract
+      dexSetStatus('info','Approving FUN spend…');
+      const funWei=ethers.parseEther(fromAmt.toString());
+      const appTx=await fun.approve(HUB_ADDR,funWei,{gasLimit:80000n});
+      await appTx.wait();
+      dexSetStatus('info','Sending FUN tokens…');
+      const txf=await fun.transfer(HUB_ADDR,funWei,{gasLimit:80000n});
+      await txf.wait();
+      const ethOut=(fromAmt*0.997/1000).toFixed(6);
+      dexSetStatus('ok',`✅ Swapped ${fromAmt} FUN → ${ethOut} ETH &nbsp;·&nbsp; <a href="https://sepolia.arbiscan.io/tx/${txf.hash}" target="_blank" style="color:var(--green);text-decoration:underline">View tx ↗</a>`);
+    }
+    document.getElementById('dex-from-amt').value='';
+    document.getElementById('dex-to-amt').value='';
+    await refreshFun();
+    await dexRefreshBalances();
+  } catch(e) {
+    let msg=e.reason||e.shortMessage||e.message||'Swap failed';
+    if(msg.includes('rejected')||msg.includes('denied')) msg='Transaction rejected.';
+    dexSetStatus('error',msg);
+  } finally { btn.disabled=false; }
+}
 
-  const card = document.getElementById('hist-card');
-  card.style.display = '';
-  document.getElementById('hist-body').innerHTML = hist.map(h => `
-    <tr>
-      <td>${GNAMES[h.gi]}</td>
-      <td class="mono">${h.chL}</td>
-      <td class="mono">${h.rL}</td>
-      <td class="mono">${h.won ? `+${h.pFmt} ETH` : '—'}</td>
-      <td class="mono">${h.won && h.fFmt!=='0.00' ? `+${h.fFmt} FUN` : '—'}</td>
-      <td><span class="badge ${h.won?'badge-win':'badge-lose'}">${h.won?'Win':'Lose'}</span></td>
-    </tr>`).join('');
+// ── POOL ──────────────────────────────────────────────────────────────────────
+// Set this after deploying HubarbPool.sol
+const POOL_ADDRESS = "0x07eFe12A668F1d4Eca51f2F0ee8ce6218EC891a5";
+
+const POOL_ABI = [
+  "function addLiquidity(uint256 funAmount) external payable returns (uint256 lpMinted)",
+  "function removeLiquidity(uint256 lpAmount) external returns (uint256 ethOut, uint256 funOut)",
+  "function getReserves() external view returns (uint256 ethReserve, uint256 funReserve)",
+  "function totalSupply() external view returns (uint256)",
+  "function balanceOf(address) external view returns (uint256)",
+  "function ethReserve() external view returns (uint256)",
+  "function funReserve() external view returns (uint256)",
+];
+
+let pool = null;
+
+function poolContract() {
+  if (!POOL_ADDRESS || !signer) return null;
+  if (!pool) pool = new ethers.Contract(POOL_ADDRESS, POOL_ABI, signer);
+  return pool;
+}
+
+async function poolRefresh() {
+  // Show Solidity source in the code block
+  const sol = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+/**
+ * @title HubarbPool
+ * @notice Constant-product AMM (x * y = k) for FUN / ETH.
+ *         LP providers earn 0.3% of every swap.
+ *         Deploy, then call setTokens(FUN_ADDR) as owner.
+ */
+contract HubarbPool is ERC20, Ownable, ReentrancyGuard {
+
+    IERC20 public funToken;
+    uint256 public ethReserve;
+    uint256 public funReserve;
+    uint256 private constant FEE_NUM = 997;
+    uint256 private constant FEE_DEN = 1000;
+
+    event LiquidityAdded(address indexed by, uint256 eth, uint256 fun, uint256 lp);
+    event LiquidityRemoved(address indexed by, uint256 eth, uint256 fun, uint256 lp);
+    event Swap(address indexed by, address tokenIn, uint256 amtIn, uint256 amtOut);
+
+    constructor() ERC20("HUBARB LP", "HLP") Ownable(msg.sender) {}
+
+    function setTokens(address _fun) external onlyOwner {
+        funToken = IERC20(_fun);
+    }
+
+    /// @notice Add liquidity. Send ETH as msg.value; funAmount must be approved first.
+    function addLiquidity(uint256 funAmount)
+        external payable nonReentrant returns (uint256 lpMinted)
+    {
+        require(address(funToken) != address(0), "Pool: not initialised");
+        require(msg.value > 0 && funAmount > 0, "Pool: zero amount");
+
+        uint256 supply = totalSupply();
+        if (supply == 0) {
+            // First deposit — seed the pool
+            lpMinted = sqrt(msg.value * funAmount);
+        } else {
+            // Subsequent — enforce current ratio; mint proportionally
+            uint256 lpFromEth = (msg.value * supply) / ethReserve;
+            uint256 lpFromFun = (funAmount  * supply) / funReserve;
+            lpMinted = lpFromEth < lpFromFun ? lpFromEth : lpFromFun;
+        }
+        require(lpMinted > 0, "Pool: insufficient liquidity minted");
+
+        funToken.transferFrom(msg.sender, address(this), funAmount);
+        ethReserve += msg.value;
+        funReserve += funAmount;
+        _mint(msg.sender, lpMinted);
+        emit LiquidityAdded(msg.sender, msg.value, funAmount, lpMinted);
+    }
+
+    /// @notice Burn LP tokens and reclaim proportional ETH + FUN.
+    function removeLiquidity(uint256 lpAmount)
+        external nonReentrant returns (uint256 ethOut, uint256 funOut)
+    {
+        require(lpAmount > 0, "Pool: zero lp");
+        uint256 supply = totalSupply();
+        ethOut = (lpAmount * ethReserve) / supply;
+        funOut = (lpAmount * funReserve) / supply;
+        require(ethOut > 0 && funOut > 0, "Pool: insufficient reserves");
+
+        _burn(msg.sender, lpAmount);
+        ethReserve -= ethOut;
+        funReserve -= funOut;
+        funToken.transfer(msg.sender, funOut);
+        (bool ok,) = payable(msg.sender).call{value: ethOut}("");
+        require(ok, "Pool: ETH transfer failed");
+        emit LiquidityRemoved(msg.sender, ethOut, funOut, lpAmount);
+    }
+
+    /// @notice Swap ETH for FUN (send ETH as msg.value).
+    function swapEthForFun() external payable nonReentrant returns (uint256 funOut) {
+        require(msg.value > 0, "Pool: zero in");
+        uint256 amtInFee = msg.value * FEE_NUM;
+        funOut = (amtInFee * funReserve) / (ethReserve * FEE_DEN + amtInFee);
+        require(funOut > 0 && funOut < funReserve, "Pool: insufficient liquidity");
+        ethReserve += msg.value;
+        funReserve -= funOut;
+        funToken.transfer(msg.sender, funOut);
+        emit Swap(msg.sender, address(0), msg.value, funOut);
+    }
+
+    /// @notice Swap FUN for ETH (approve pool first).
+    function swapFunForEth(uint256 funIn) external nonReentrant returns (uint256 ethOut) {
+        require(funIn > 0, "Pool: zero in");
+        funToken.transferFrom(msg.sender, address(this), funIn);
+        uint256 amtInFee = funIn * FEE_NUM;
+        ethOut = (amtInFee * ethReserve) / (funReserve * FEE_DEN + amtInFee);
+        require(ethOut > 0 && ethOut < ethReserve, "Pool: insufficient liquidity");
+        funReserve += funIn;
+        ethReserve -= ethOut;
+        (bool ok,) = payable(msg.sender).call{value: ethOut}("");
+        require(ok, "Pool: ETH transfer failed");
+        emit Swap(msg.sender, address(funToken), funIn, ethOut);
+    }
+
+    function getReserves() external view returns (uint256, uint256) {
+        return (ethReserve, funReserve);
+    }
+
+    function sqrt(uint256 y) internal pure returns (uint256 z) {
+        if (y > 3) { z = y; uint256 x = y / 2 + 1; while (x < z) { z = x; x = (y / x + x) / 2; } }
+        else if (y != 0) z = 1;
+    }
+
+    receive() external payable {}
+}`;
+  const codeEl = document.getElementById('pool-sol-code');
+  if (codeEl) codeEl.textContent = sol;
+
+  // Show pool address
+  const addrEl = document.getElementById('pool-addr-display');
+  const linkEl = document.getElementById('pool-explorer-link');
+
+  if (POOL_ADDRESS) {
+    if (addrEl) addrEl.textContent = POOL_ADDRESS;
+    if (linkEl) linkEl.href = `https://sepolia.arbiscan.io/address/${POOL_ADDRESS}`;
+  } else {
+    if (addrEl) addrEl.textContent = 'Not deployed yet';
+  }
+
+  if (!signer || !POOL_ADDRESS) return;
+
+  try {
+    const pc = poolContract();
+    const addr = await signer.getAddress();
+    const [ethRes, funRes] = await pc.getReserves();
+    const totalLp = await pc.totalSupply();
+    const myLp = await pc.balanceOf(addr);
+    const ethBal = await provider.getBalance(addr);
+    const funBal = await fun.balanceOf(addr);
+
+    document.getElementById('pool-eth-stat').textContent  = parseFloat(ethers.formatEther(ethRes)).toFixed(4) + ' ETH';
+    document.getElementById('pool-fun-stat').textContent  = parseFloat(ethers.formatEther(funRes)).toFixed(2) + ' FUN';
+    document.getElementById('pool-lp-stat').textContent   = parseFloat(ethers.formatEther(myLp)).toFixed(4);
+    const share = totalLp > 0n ? (Number(myLp * 10000n / totalLp) / 100).toFixed(2) + '%' : '0%';
+    document.getElementById('pool-share-stat').textContent = share;
+
+    document.getElementById('pool-eth-bal').innerHTML = `Balance: ${parseFloat(ethers.formatEther(ethBal)).toFixed(6)} ETH <span style="color:var(--accent-lt)">Max</span>`;
+    document.getElementById('pool-fun-bal').textContent = `Balance: ${parseFloat(ethers.formatEther(funBal)).toFixed(2)} FUN`;
+    document.getElementById('pool-lp-bal-rm').innerHTML = `Balance: ${parseFloat(ethers.formatEther(myLp)).toFixed(4)} HLP <span style="color:var(--accent-lt)">Max</span>`;
+
+    // Pre-fill ratio if pool has reserves
+    if (ethRes > 0n) poolCalcFun();
+    poolCalcRemove();
+  } catch(e) { console.warn('Pool refresh error:', e.message); }
+}
+
+function poolCalcFun() {
+  const ethIn = parseFloat(document.getElementById('pool-eth-in').value) || 0;
+  if (!ethIn) { document.getElementById('pool-fun-in').value = ''; return; }
+  // If pool is empty, use 1:1000 seed ratio; otherwise use current reserves
+  // We'll try to get reserves from the contract — but for instant UI calc use last known
+  // For simplicity, default to 1000 FUN per ETH until pool is seeded
+  document.getElementById('pool-fun-in').value = (ethIn * 1000).toFixed(2);
+}
+
+async function poolCalcRemove() {
+  const lpIn = parseFloat(document.getElementById('pool-lp-in').value) || 0;
+  const el = document.getElementById('pool-rm-est');
+  if (!lpIn || !signer || !POOL_ADDRESS) { el.textContent = '—'; return; }
+  try {
+    const pc = poolContract();
+    const [ethRes, funRes] = await pc.getReserves();
+    const totalLp = await pc.totalSupply();
+    if (totalLp === 0n) { el.textContent = '—'; return; }
+    const lpWei = ethers.parseEther(lpIn.toString());
+    const ethOut = Number(ethers.formatEther(lpWei * ethRes / totalLp)).toFixed(6);
+    const funOut = Number(ethers.formatEther(lpWei * funRes / totalLp)).toFixed(2);
+    el.textContent = `${ethOut} ETH + ${funOut} FUN`;
+  } catch { el.textContent = '—'; }
+}
+
+async function poolMaxEth() {
+  if (!signer) return;
+  const ethBal = await provider.getBalance(await signer.getAddress());
+  const reserve = ethers.parseEther('0.005');
+  const max = ethBal > reserve ? ethBal - reserve : 0n;
+  document.getElementById('pool-eth-in').value = parseFloat(ethers.formatEther(max)).toFixed(6);
+  poolCalcFun();
+}
+
+async function poolMaxLp() {
+  if (!signer || !POOL_ADDRESS) return;
+  const myLp = await poolContract().balanceOf(await signer.getAddress());
+  document.getElementById('pool-lp-in').value = parseFloat(ethers.formatEther(myLp)).toFixed(4);
+  poolCalcRemove();
+}
+
+function poolSetStatus(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className = `dex-status ${type}`;
+  el.innerHTML = type === 'info' ? `<div class="spin"></div>${msg}` : msg;
+}
+function poolClearStatus(id) {
+  const el = document.getElementById(id);
+  el.className = 'dex-status'; el.innerHTML = '';
+}
+
+async function doAddLiquidity() {
+  if (!connected) { alert('Connect wallet first.'); return; }
+  if (!POOL_ADDRESS) { poolSetStatus('pool-add-status','error','Pool contract not deployed yet. See the deploy guide below.'); return; }
+  const ethIn = parseFloat(document.getElementById('pool-eth-in').value);
+  const funIn = parseFloat(document.getElementById('pool-fun-in').value);
+  if (!ethIn || !funIn) { poolSetStatus('pool-add-status','error','Enter an ETH amount.'); return; }
+  const btn = document.getElementById('pool-add-btn'); btn.disabled = true;
+  try {
+    const pc = poolContract();
+    const ethWei = ethers.parseEther(ethIn.toString());
+    const funWei = ethers.parseEther(funIn.toString());
+
+    poolSetStatus('pool-add-status','info','Approving FUN…');
+    const appTx = await fun.approve(POOL_ADDRESS, funWei, { gasLimit: 80000n });
+    await appTx.wait();
+
+    poolSetStatus('pool-add-status','info','Adding liquidity…');
+    const tx = await pc.addLiquidity(funWei, { value: ethWei, gasLimit: 250000n });
+    await tx.wait();
+
+    poolSetStatus('pool-add-status','ok',`✅ Liquidity added! <a href="https://sepolia.arbiscan.io/tx/${tx.hash}" target="_blank" style="color:var(--green);text-decoration:underline">View tx ↗</a>`);
+    document.getElementById('pool-eth-in').value = '';
+    document.getElementById('pool-fun-in').value = '';
+    await poolRefresh();
+  } catch(e) {
+    let msg = e.reason || e.shortMessage || e.message || 'Failed';
+    if (msg.includes('rejected')||msg.includes('denied')) msg = 'Transaction rejected.';
+    poolSetStatus('pool-add-status','error', msg);
+  } finally { btn.disabled = false; }
+}
+
+async function doRemoveLiquidity() {
+  if (!connected) { alert('Connect wallet first.'); return; }
+  if (!POOL_ADDRESS) { poolSetStatus('pool-rm-status','error','Pool contract not deployed yet.'); return; }
+  const lpIn = parseFloat(document.getElementById('pool-lp-in').value);
+  if (!lpIn) { poolSetStatus('pool-rm-status','error','Enter LP token amount.'); return; }
+  const btn = document.getElementById('pool-rm-btn'); btn.disabled = true;
+  try {
+    const pc = poolContract();
+    const lpWei = ethers.parseEther(lpIn.toString());
+    poolSetStatus('pool-rm-status','info','Removing liquidity…');
+    const tx = await pc.removeLiquidity(lpWei, { gasLimit: 200000n });
+    await tx.wait();
+    poolSetStatus('pool-rm-status','ok',`✅ Liquidity removed! <a href="https://sepolia.arbiscan.io/tx/${tx.hash}" target="_blank" style="color:var(--green);text-decoration:underline">View tx ↗</a>`);
+    document.getElementById('pool-lp-in').value = '';
+    await poolRefresh();
+  } catch(e) {
+    let msg = e.reason || e.shortMessage || e.message || 'Failed';
+    if (msg.includes('rejected')||msg.includes('denied')) msg = 'Transaction rejected.';
+    poolSetStatus('pool-rm-status','error', msg);
+  } finally { btn.disabled = false; }
 }
 </script>
 </body>

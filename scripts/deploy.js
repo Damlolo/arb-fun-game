@@ -3,12 +3,13 @@ import dotenv from "dotenv";
 dotenv.config();
 
 async function main() {
-  // Debug: check env is loaded
   if (!process.env.PRIVATE_KEY) {
     throw new Error("PRIVATE_KEY not found in .env file. Make sure .env exists in your project root.");
   }
 
   const { ethers } = await network.connect("arbitrumSepolia");
+
+  console.log("Deploying to Arbitrum Sepolia...");
 
   const [deployer] = await ethers.getSigners();
   console.log("Deploying with:", deployer.address);
@@ -43,10 +44,10 @@ async function main() {
 
   const tx2 = await funToken.setMinter(gameHubAddr);
   await tx2.wait();
-  console.log("   FunToken -> minter = GameHub");
+  console.log("   FunToken -> minter = GameHub\n");
 
   // 4. Summary
-  console.log("\n==========================================");
+  console.log("==========================================");
   console.log("  ARB FUN HOUSE - DEPLOYMENT COMPLETE");
   console.log("==========================================");
   console.log("  FunToken :", funTokenAddr);
