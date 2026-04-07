@@ -1022,34 +1022,57 @@ function dexClearStatus() {
 }
 async function doSwap() {
   if (!connected) { alert("Connect wallet first."); return; }
-  if (!POOL_ADDRESS) { dexSetStatus('error', 'Pool contract not deployed yet. Add liquidity first.'); return; }
+  if (!POOL_ADDRESS) {
+    dexSetStatus('error', '⚠️ Pool not deployed. Go to the Pool tab and add liquidity first.');
+    return;
+  }
   const fromAmt = parseFloat(document.getElementById('dex-from-amt').value);
   if (!fromAmt || fromAmt <= 0) { dexSetStatus('error', 'Enter an amount to swap.'); return; }
+
   const btn = document.getElementById('dex-swap-btn'); btn.disabled = true;
   try {
+    // Check pool has liquidity before attempting swap
     const pc = poolContract();
+    const [ethRes, funRes] = await pc.getReserves();
+    if (ethRes === 0n || funRes === 0n) {
+      dexSetStatus('error', '⚠️ Pool has no liquidity yet. Go to the Pool tab and add ETH + FUN first.');
+      btn.disabled = false;
+      return;
+    }
+
     if (dexDir === 0) {
-      // ETH → FUN: call pool.swapEthForFun() with ETH value
+      // ETH → FUN via pool.swapEthForFun()
       dexSetStatus('info', 'Waiting for wallet approval…');
       const wei = ethers.parseEther(fromAmt.toString());
+      // Sanity check: amount must be less than pool reserves
+      if (wei >= funRes) {
+        dexSetStatus('error', `⚠️ Swap too large. Pool only has ${parseFloat(ethers.formatEther(funRes)).toFixed(2)} FUN.`);
+        btn.disabled = false;
+        return;
+      }
       const tx = await pc.swapEthForFun({ value: wei, gasLimit: 150000n });
       dexSetStatus('info', 'Confirming transaction…');
-      const rx = await tx.wait();
-      // Parse actual FUN received from return value via receipt
-      const funOut = (fromAmt * 0.997 * 1000).toFixed(2); // estimated; real amount is in tx
+      await tx.wait();
+      const funOut = (fromAmt * 0.997 * Number(ethers.formatEther(funRes)) / Number(ethers.formatEther(ethRes))).toFixed(4);
       dexSetStatus('ok', `✅ Swapped ${fromAmt} ETH → ~${funOut} FUN &nbsp;·&nbsp; <a href="https://sepolia.arbiscan.io/tx/${tx.hash}" target="_blank" style="color:var(--green);text-decoration:underline">View tx ↗</a>`);
     } else {
-      // FUN → ETH: approve pool then call pool.swapFunForEth()
-      dexSetStatus('info', 'Approving FUN spend…');
+      // FUN → ETH via pool.swapFunForEth()
       const funWei = ethers.parseEther(fromAmt.toString());
+      if (funWei >= ethRes) {
+        dexSetStatus('error', `⚠️ Swap too large. Pool only has ${parseFloat(ethers.formatEther(ethRes)).toFixed(6)} ETH.`);
+        btn.disabled = false;
+        return;
+      }
+      dexSetStatus('info', 'Approving FUN spend…');
       const appTx = await fun.approve(POOL_ADDRESS, funWei, { gasLimit: 80000n });
       await appTx.wait();
       dexSetStatus('info', 'Swapping FUN for ETH…');
       const tx = await pc.swapFunForEth(funWei, { gasLimit: 150000n });
       await tx.wait();
-      const ethOut = (fromAmt * 0.997 / 1000).toFixed(6);
+      const ethOut = (fromAmt * 0.997 * Number(ethers.formatEther(ethRes)) / Number(ethers.formatEther(funRes))).toFixed(6);
       dexSetStatus('ok', `✅ Swapped ${fromAmt} FUN → ~${ethOut} ETH &nbsp;·&nbsp; <a href="https://sepolia.arbiscan.io/tx/${tx.hash}" target="_blank" style="color:var(--green);text-decoration:underline">View tx ↗</a>`);
     }
+
     document.getElementById('dex-from-amt').value = '';
     document.getElementById('dex-to-amt').value = '';
     await refreshFun();
@@ -1057,7 +1080,8 @@ async function doSwap() {
   } catch(e) {
     let msg = e.reason || e.shortMessage || e.message || 'Swap failed';
     if (msg.includes('rejected') || msg.includes('denied')) msg = 'Transaction rejected.';
-    if (msg.includes('insufficient liquidity') || msg.includes('Pool:')) msg = 'Insufficient pool liquidity. Add liquidity first.';
+    if (msg.includes('insufficient liquidity') || msg.includes('Pool:')) msg = '⚠️ Pool has insufficient liquidity. Add more ETH + FUN in the Pool tab.';
+    if (msg.includes('429') || msg.includes('rate') || msg.includes('limit')) msg = '⚠️ RPC rate limit hit. Wait a few seconds and try again.';
     dexSetStatus('error', msg);
   } finally { btn.disabled = false; }
 }
