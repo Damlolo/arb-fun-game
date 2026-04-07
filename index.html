@@ -1021,41 +1021,45 @@ function dexClearStatus() {
   el.className='dex-status'; el.innerHTML='';
 }
 async function doSwap() {
-  if(!connected){ alert("Connect wallet first."); return; }
-  const fromAmt=parseFloat(document.getElementById('dex-from-amt').value);
-  if(!fromAmt||fromAmt<=0){ dexSetStatus('error','Enter an amount to swap.'); return; }
-  const btn=document.getElementById('dex-swap-btn'); btn.disabled=true;
+  if (!connected) { alert("Connect wallet first."); return; }
+  if (!POOL_ADDRESS) { dexSetStatus('error', 'Pool contract not deployed yet. Add liquidity first.'); return; }
+  const fromAmt = parseFloat(document.getElementById('dex-from-amt').value);
+  if (!fromAmt || fromAmt <= 0) { dexSetStatus('error', 'Enter an amount to swap.'); return; }
+  const btn = document.getElementById('dex-swap-btn'); btn.disabled = true;
   try {
-    if(dexDir===0) {
-      // ETH → FUN: send ETH to GameHub contract
-      dexSetStatus('info','Waiting for wallet approval…');
-      const wei=ethers.parseEther(fromAmt.toString());
-      const tx=await signer.sendTransaction({to:HUB_ADDR,value:wei,gasLimit:80000n});
-      dexSetStatus('info','Confirming transaction…');
-      await tx.wait();
-      const funOut=(fromAmt*0.997*1000).toFixed(2);
-      dexSetStatus('ok',`✅ Swapped ${fromAmt} ETH → ${funOut} FUN &nbsp;·&nbsp; <a href="https://sepolia.arbiscan.io/tx/${tx.hash}" target="_blank" style="color:var(--green);text-decoration:underline">View tx ↗</a>`);
+    const pc = poolContract();
+    if (dexDir === 0) {
+      // ETH → FUN: call pool.swapEthForFun() with ETH value
+      dexSetStatus('info', 'Waiting for wallet approval…');
+      const wei = ethers.parseEther(fromAmt.toString());
+      const tx = await pc.swapEthForFun({ value: wei, gasLimit: 150000n });
+      dexSetStatus('info', 'Confirming transaction…');
+      const rx = await tx.wait();
+      // Parse actual FUN received from return value via receipt
+      const funOut = (fromAmt * 0.997 * 1000).toFixed(2); // estimated; real amount is in tx
+      dexSetStatus('ok', `✅ Swapped ${fromAmt} ETH → ~${funOut} FUN &nbsp;·&nbsp; <a href="https://sepolia.arbiscan.io/tx/${tx.hash}" target="_blank" style="color:var(--green);text-decoration:underline">View tx ↗</a>`);
     } else {
-      // FUN → ETH: approve then transfer FUN tokens to contract
-      dexSetStatus('info','Approving FUN spend…');
-      const funWei=ethers.parseEther(fromAmt.toString());
-      const appTx=await fun.approve(HUB_ADDR,funWei,{gasLimit:80000n});
+      // FUN → ETH: approve pool then call pool.swapFunForEth()
+      dexSetStatus('info', 'Approving FUN spend…');
+      const funWei = ethers.parseEther(fromAmt.toString());
+      const appTx = await fun.approve(POOL_ADDRESS, funWei, { gasLimit: 80000n });
       await appTx.wait();
-      dexSetStatus('info','Sending FUN tokens…');
-      const txf=await fun.transfer(HUB_ADDR,funWei,{gasLimit:80000n});
-      await txf.wait();
-      const ethOut=(fromAmt*0.997/1000).toFixed(6);
-      dexSetStatus('ok',`✅ Swapped ${fromAmt} FUN → ${ethOut} ETH &nbsp;·&nbsp; <a href="https://sepolia.arbiscan.io/tx/${txf.hash}" target="_blank" style="color:var(--green);text-decoration:underline">View tx ↗</a>`);
+      dexSetStatus('info', 'Swapping FUN for ETH…');
+      const tx = await pc.swapFunForEth(funWei, { gasLimit: 150000n });
+      await tx.wait();
+      const ethOut = (fromAmt * 0.997 / 1000).toFixed(6);
+      dexSetStatus('ok', `✅ Swapped ${fromAmt} FUN → ~${ethOut} ETH &nbsp;·&nbsp; <a href="https://sepolia.arbiscan.io/tx/${tx.hash}" target="_blank" style="color:var(--green);text-decoration:underline">View tx ↗</a>`);
     }
-    document.getElementById('dex-from-amt').value='';
-    document.getElementById('dex-to-amt').value='';
+    document.getElementById('dex-from-amt').value = '';
+    document.getElementById('dex-to-amt').value = '';
     await refreshFun();
     await dexRefreshBalances();
   } catch(e) {
-    let msg=e.reason||e.shortMessage||e.message||'Swap failed';
-    if(msg.includes('rejected')||msg.includes('denied')) msg='Transaction rejected.';
-    dexSetStatus('error',msg);
-  } finally { btn.disabled=false; }
+    let msg = e.reason || e.shortMessage || e.message || 'Swap failed';
+    if (msg.includes('rejected') || msg.includes('denied')) msg = 'Transaction rejected.';
+    if (msg.includes('insufficient liquidity') || msg.includes('Pool:')) msg = 'Insufficient pool liquidity. Add liquidity first.';
+    dexSetStatus('error', msg);
+  } finally { btn.disabled = false; }
 }
 
 // ── POOL ──────────────────────────────────────────────────────────────────────
@@ -1070,6 +1074,8 @@ const POOL_ABI = [
   "function balanceOf(address) external view returns (uint256)",
   "function ethReserve() external view returns (uint256)",
   "function funReserve() external view returns (uint256)",
+  "function swapEthForFun() external payable returns (uint256 funOut)",
+  "function swapFunForEth(uint256 funIn) external returns (uint256 ethOut)",
 ];
 
 let pool = null;
