@@ -1,0 +1,14 @@
+.exit
+console.log(Object.keys(hre.default));
+const hub2 = await hre.default.ethers.getContractAt("GameHub", "0xF67dA5dE3b6c4D8675047eBf0DE71Dd9Ac96227C");
+const hub = await hre.default.ethers.getContractAt("GameHub", "0xF67dA5dE3b6c4D8675047eBf0DE71Dd9Ac96227C");
+console.log(Object.keys(hre));
+const hub = await hre.ethers.getContractAt("GameHub", "0xF67dA5dE3b6c4D8675047eBf0DE71Dd9Ac96227C");
+const hre = await import("hardhat");
+const hub = await hre.ethers.getContractAt("GameHub", "0xF67dA5dE3b6c4D8675047eBf0DE71Dd9Ac96227C");
+const hre = await import("hardhat");
+const hub = await ethers.getContractAt("GameHub", "0xF67dA5dE3b6c4D8675047eBf0DE71Dd9Ac96227C");
+const { ethers } = await import("hardhat");
+const { ethers } = require("hardhat");
+await hub.setRewardRate(1000000);const { ethers } = require("hardhat");
+const hub = await ethers.getContractAt("GameHub", "0xF67dA5dE3b6c4D8675047eBf0DE71Dd9Ac96227C");
