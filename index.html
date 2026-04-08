@@ -1138,7 +1138,7 @@ function updStats(won) {
   document.getElementById('s-played').textContent=plays;
   document.getElementById('s-wr').textContent=plays>0?((wins/plays*100).toFixed(0)+'%'):'—';
 }
-async function addHist(gi,ch,{won,result,payout,funRewarded},bet) {
+function addHist(gi,ch,{won,result,payout,funRewarded},bet) {
   const pFmt=parseFloat(ethers.formatEther(payout)).toFixed(6);
   const fFmt=parseFloat(ethers.formatEther(funRewarded)).toFixed(2);
   const betFmt=parseFloat(bet).toFixed(4);
@@ -1149,16 +1149,19 @@ async function addHist(gi,ch,{won,result,payout,funRewarded},bet) {
   // Persist to localStorage (offline fallback)
   try { localStorage.setItem('hubarb_hist', JSON.stringify(hist)); } catch(_){}
   // Persist to Supabase
-  const playerAddr = await signer.getAddress();
-  sb.from('game_history').insert({
-  player:       playerAddr,
-  game_name:    GNAMES[gi],
-  choice:       chL,
-  result:       rL,
-  won,
-  payout_eth:   parseFloat(ethers.formatEther(payout)),
-  fun_rewarded: parseFloat(ethers.formatEther(funRewarded)),
-}).then(({error}) => { if (error) console.warn('Supabase insert:', error); });
+  signer?.getAddress().then(addr => {
+    sbInsert('game_history', {
+      player:       addr.toLowerCase(),
+      game_name:    GNAMES[gi],
+      choice:       chL,
+      result:       rL,
+      won,
+      payout_eth:   parseFloat(pFmt),
+      fun_rewarded: parseFloat(fFmt),
+      bet_eth:      parseFloat(betFmt),
+    });
+  });
+  renderHist();
 }
 function renderHist() {
   if(!hist.length) return;
@@ -1175,32 +1178,27 @@ function renderHist() {
 async function loadHistFromStorage() {
   try {
     const addr = await signer.getAddress();
-    if (sb) {
-      const { data: gh, error } = await sb.from('game_history')
-        .select('*')
-        .eq('player', addr.toLowerCase())
-        .order('played_at', { ascending: false })
-        .limit(20);
-      if (!error && gh && gh.length > 0) {
-        hist = gh.map(r => ({
-          gi:      GNAMES.indexOf(r.game_name),
-          chL:     r.choice,
-          rL:      r.result,
-          won:     r.won,
-          pFmt:    r.payout_eth?.toFixed(6) ?? '0.000000',
-          fFmt:    r.fun_rewarded?.toFixed(2) ?? '0.00',
-          betFmt:  parseFloat(r.bet_eth||0).toFixed(4),
-        }));
-        plays = hist.length;
-        wins  = hist.filter(h=>h.won).length;
-        document.getElementById('s-played').textContent = plays;
-        document.getElementById('s-wr').textContent = plays>0?((wins/plays*100).toFixed(0)+'%'):'—';
-        renderHist();
-        // Also load swap and liquidity history
-        loadSwapHistFromDB(addr);
-        loadLiqHistFromDB(addr);
-        return;
-      }
+    // Try Supabase first
+    const data = await sbLoad('game_history', addr);
+    if (data && data.length > 0) {
+      hist = data.map(r => ({
+        gi:      GNAMES.indexOf(r.game_name),
+        chL:     r.choice,
+        rL:      r.result,
+        won:     r.won,
+        pFmt:    parseFloat(r.payout_eth||0).toFixed(6),
+        fFmt:    parseFloat(r.fun_rewarded||0).toFixed(2),
+        betFmt:  parseFloat(r.bet_eth||0).toFixed(4),
+      }));
+      plays = hist.length;
+      wins  = hist.filter(h=>h.won).length;
+      document.getElementById('s-played').textContent = plays;
+      document.getElementById('s-wr').textContent = plays>0?((wins/plays*100).toFixed(0)+'%'):'—';
+      renderHist();
+      // Also load swap and liquidity history
+      loadSwapHistFromDB(addr);
+      loadLiqHistFromDB(addr);
+      return;
     }
   } catch(_){}
   // Fallback: localStorage
@@ -1218,14 +1216,9 @@ async function loadHistFromStorage() {
 }
 
 async function loadSwapHistFromDB(addr) {
-  if (!sb) return;
-  const { data: sh, error } = await sb.from('swap_history')
-    .select('*')
-    .eq('player', addr.toLowerCase())
-    .order('swapped_at', { ascending: false })
-    .limit(20);
-  if (error || !sh || !sh.length) return;
-  swapHist = sh.map(r => ({
+  const data = await sbLoad('swap_history', addr);
+  if (!data || !data.length) return;
+  swapHist = data.map(r => ({
     direction: r.direction,
     amtIn:     r.amount_in,
     amtOut:    r.amount_out,
@@ -1379,16 +1372,20 @@ async function doSwap() {
   } finally { btn.disabled = false; }
 }
 
-async function addSwapHist(direction, amtIn, amtOut, txHash) {
+function addSwapHist(direction, amtIn, amtOut, txHash) {
   swapHist.unshift({direction, amtIn, amtOut, txHash});
-  const playerAddr = await signer.getAddress();
-  sb.from('swap_history').insert({
-  player:     playerAddr,
-  direction,
-  amount_in:  parseFloat(amtIn),
-  amount_out: parseFloat(amtOut),
-  tx_hash:    txHash,
-}).then(({error}) => { if (error) console.warn('Supabase swap insert:', error); });
+  if (swapHist.length > 50) swapHist.pop();
+  // Save to Supabase
+  signer?.getAddress().then(addr => {
+    sbInsert('swap_history', {
+      player:     addr.toLowerCase(),
+      direction,
+      amount_in:  parseFloat(amtIn)  || 0,
+      amount_out: parseFloat(amtOut) || 0,
+      tx_hash:    txHash,
+    });
+  });
+  renderSwapHist();
 }
 
 function renderSwapHist() {
@@ -1404,17 +1401,21 @@ function renderSwapHist() {
   ).join('');
 }
 
-async function addLiqHist(action, ethAmt, funAmt, lpAmt, txHash) {
+function addLiqHist(action, ethAmt, funAmt, lpAmt, txHash) {
   liqHist.unshift({action, ethAmt, funAmt, lpAmt, txHash});
-  const playerAddr = await signer.getAddress();
-  sb.from('liquidity_history').insert({
-  player:     playerAddr,
-  action,
-  eth_amount: parseFloat(ethAmt) || null,
-  fun_amount: parseFloat(funAmt) || null,
-  lp_tokens:  parseFloat(lpAmt) || null,
-  tx_hash:    txHash,
-}).then(({error}) => { if (error) console.warn('Supabase liq insert:', error); });
+  if (liqHist.length > 50) liqHist.pop();
+  // Save to Supabase
+  signer?.getAddress().then(addr => {
+    sbInsert('liquidity_history', {
+      player:     addr.toLowerCase(),
+      action,
+      eth_amount: parseFloat(ethAmt) || null,
+      fun_amount: parseFloat(funAmt) || null,
+      lp_tokens:  parseFloat(lpAmt)  || null,
+      tx_hash:    txHash,
+    });
+  });
+  renderLiqHist();
 }
 
 function renderLiqHist() {
