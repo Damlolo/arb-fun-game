@@ -92,11 +92,11 @@ html,body { background:var(--bg); color:var(--text-1); font-family:'DM Sans',san
 .vis.vis-wheel { height:340px; background:radial-gradient(ellipse at 50% 40%, rgba(108,99,255,0.06) 0%, transparent 70%), var(--surface-2); }
 
 /* COIN */
-.coin-wrap { width:80px; height:80px; perspective:400px; }
-.coin { width:80px; height:80px; position:relative; transform-style:preserve-3d; transition:none; }
-.coin-face,.coin-back { position:absolute; inset:0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:36px; backface-visibility:hidden; border:3px solid rgba(255,255,255,0.15); }
-.coin-face { background:radial-gradient(circle at 35% 35%,#fde68a,#f59e0b); }
-.coin-back { background:radial-gradient(circle at 35% 35%,#d1fae5,#6ee7b7); transform:rotateY(180deg); }
+.coin-wrap { width:100px; height:100px; perspective:500px; }
+.coin { width:100px; height:100px; position:relative; transform-style:preserve-3d; transition:none; }
+.coin-face,.coin-back { position:absolute; inset:0; border-radius:50%; display:flex; align-items:center; justify-content:center; backface-visibility:hidden; overflow:hidden; }
+.coin-face { background:transparent; }
+.coin-back { background:transparent; transform:rotateY(180deg); }
 @keyframes coinFlip { 0%{transform:rotateY(0deg)} 100%{transform:rotateY(1800deg)} }
 .coin.flipping { animation:coinFlip 1.6s cubic-bezier(.4,0,.2,1) forwards; }
 .coin.heads-result { transform:rotateY(0deg); }
@@ -219,8 +219,53 @@ html,body { background:var(--bg); color:var(--text-1); font-family:'DM Sans',san
   .sidebar { display:none; }
   .stats { grid-template-columns:1fr 1fr; }
   .gc-inner { grid-template-columns:1fr; }
-  .main { padding:16px; }
+  .main { padding:16px; padding-bottom:80px; }
   .gc-tags { display:none; }
+  .dex-card { padding:16px; }
+  .mobile-nav { display:flex !important; }
+  .tab-bar { display:none; }
+  .vis { height:200px; }
+  .vis.vis-wheel { height:260px; }
+  .wheel-scene { width:230px; height:230px; }
+  .wheel-svg-el { width:210px; height:210px; }
+  .bet-panel { gap:10px; }
+  .hist-tbl th:nth-child(3),.hist-tbl td:nth-child(3) { display:none; }
+}
+/* Mobile bottom navigation */
+.mobile-nav {
+  display:none;
+  position:fixed;
+  bottom:0; left:0; right:0;
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  padding:8px 0 env(safe-area-inset-bottom,8px);
+  z-index:100;
+  justify-content:space-around;
+  align-items:center;
+}
+.mob-nav-item {
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:6px 16px; border-radius:var(--r-sm); cursor:pointer;
+  font-size:10px; font-weight:500; color:var(--text-3);
+  transition:color .13s,background .13s;
+  border:none; background:transparent; font-family:'DM Sans',sans-serif;
+}
+.mob-nav-item.active { color:var(--accent-lt); }
+.mob-nav-item span { font-size:20px; line-height:1; }
+/* Mobile wallet strip */
+.mobile-wallet-strip {
+  display:none;
+}
+@media (max-width:760px) {
+  .mobile-wallet-strip {
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px; background:var(--surface-2); border:1px solid var(--border);
+    border-radius:var(--r); padding:10px 14px; margin-bottom:16px;
+  }
+  .mob-bal-group { display:flex; flex-direction:column; gap:2px; }
+  .mob-bal-lbl { font-size:9px; font-weight:500; text-transform:uppercase; letter-spacing:1px; color:var(--text-3); }
+  .mob-bal-val { font-size:14px; font-weight:600; font-family:'DM Mono',monospace; color:var(--text-1); }
+  .mob-bal-val small { font-size:10px; color:var(--text-2); font-weight:400; margin-left:2px; }
 }
 </style>
 </head>
@@ -229,7 +274,23 @@ html,body { background:var(--bg); color:var(--text-1); font-family:'DM Sans',san
 
   <div class="topbar">
     <div class="brand">
-      <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+      <div class="brand-mark">
+        <svg viewBox="0 0 28 28" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Coin base -->
+          <circle cx="14" cy="14" r="13" fill="url(#logoGold)" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+          <!-- H letter -->
+          <text x="14" y="19" text-anchor="middle" font-size="13" font-weight="800" fill="#1a1200" font-family="system-ui,sans-serif" letter-spacing="-1">H</text>
+          <!-- Shine -->
+          <ellipse cx="10" cy="9" rx="4" ry="2.5" fill="rgba(255,255,255,0.22)" transform="rotate(-20 10 9)"/>
+          <defs>
+            <radialGradient id="logoGold" cx="35%" cy="30%" r="80%">
+              <stop offset="0%" stop-color="#fde68a"/>
+              <stop offset="55%" stop-color="#f59e0b"/>
+              <stop offset="100%" stop-color="#92400e"/>
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
       <span class="brand-name">HUBARB</span>
       <span class="brand-chip">TESTNET</span>
     </div>
@@ -257,8 +318,12 @@ html,body { background:var(--bg); color:var(--text-1); font-family:'DM Sans',san
     <div class="nav-item" onclick="showTab('pool')"><div class="nav-ico">💧</div>Liquidity Pool</div>
     <div class="nav-item" onclick="showTab('games');scrollToHistory()"><div class="nav-ico">📊</div>History</div>
     <div class="s-footer">
+      <div class="s-label">ETH balance</div>
+      <div class="s-balance" id="s-eth-bal">0.000000<small>ETH</small></div>
+      <div style="margin-top:8px">
       <div class="s-label">FUN balance</div>
       <div class="s-balance" id="s-bal">0.00<small>FUN</small></div>
+      </div>
       <div class="s-actions">
         <a href="#" id="token-link" target="_blank" class="s-btn s-btn-p">View Token</a>
         <a href="#" id="explorer-link" target="_blank" class="s-btn s-btn-s">Explorer</a>
@@ -277,6 +342,19 @@ html,body { background:var(--bg); color:var(--text-1); font-family:'DM Sans',san
     </div>
 
     <div id="game-view" style="display:none">
+      <!-- Mobile balance strip -->
+      <div class="mobile-wallet-strip" id="mob-wallet-strip">
+        <div class="mob-bal-group">
+          <div class="mob-bal-lbl">ETH</div>
+          <div class="mob-bal-val" id="mob-eth-bal">0.000000<small>ETH</small></div>
+        </div>
+        <div class="mob-bal-group" style="text-align:center">
+          <div class="mob-bal-lbl">FUN</div>
+          <div class="mob-bal-val" id="mob-fun-bal">0.00<small>FUN</small></div>
+        </div>
+        <a href="#" id="mob-token-link" target="_blank" class="s-btn s-btn-p" style="flex:none;padding:7px 12px;font-size:11px">Token ↗</a>
+      </div>
+
       <div class="tab-bar">
         <button class="tab-btn active" id="tab-games" onclick="showTab('games')">🎮 Games</button>
         <button class="tab-btn" id="tab-dex" onclick="showTab('dex')">🔄 Swap</button>
@@ -300,7 +378,62 @@ html,body { background:var(--bg); color:var(--text-1); font-family:'DM Sans',san
           </div>
           <div class="gc-body"><div class="gc-inner">
             <div>
-              <div class="vis" id="vis-0"><div class="coin-wrap"><div class="coin heads-result" id="coin-el"><div class="coin-face">🌕</div><div class="coin-back">🌑</div></div></div></div>
+              <div class="vis" id="vis-0"><div class="coin-wrap"><div class="coin heads-result" id="coin-el">
+                <!-- HEADS face: HUBARB coin face -->
+                <div class="coin-face">
+                  <svg viewBox="0 0 80 80" width="80" height="80" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <radialGradient id="cfHead" cx="35%" cy="30%" r="80%">
+                        <stop offset="0%" stop-color="#fef3c7"/>
+                        <stop offset="55%" stop-color="#f59e0b"/>
+                        <stop offset="100%" stop-color="#b45309"/>
+                      </radialGradient>
+                    </defs>
+                    <circle cx="40" cy="40" r="39" fill="url(#cfHead)" stroke="#92400e" stroke-width="1.5"/>
+                    <circle cx="40" cy="40" r="33" fill="none" stroke="rgba(146,64,14,0.35)" stroke-width="1"/>
+                    <!-- Face outline -->
+                    <circle cx="40" cy="36" r="14" fill="#92400e" opacity="0.15"/>
+                    <!-- Eyes -->
+                    <circle cx="35" cy="33" r="2.5" fill="#78350f"/>
+                    <circle cx="45" cy="33" r="2.5" fill="#78350f"/>
+                    <circle cx="35.8" cy="32.2" r="0.9" fill="rgba(255,255,255,0.6)"/>
+                    <circle cx="45.8" cy="32.2" r="0.9" fill="rgba(255,255,255,0.6)"/>
+                    <!-- Smile -->
+                    <path d="M34 40 Q40 46 46 40" stroke="#78350f" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    <!-- H letter crown -->
+                    <text x="40" y="24" text-anchor="middle" font-size="9" font-weight="800" fill="#78350f" font-family="system-ui,sans-serif" opacity="0.7">HUBARB</text>
+                    <!-- Shine -->
+                    <ellipse cx="28" cy="22" rx="9" ry="5" fill="rgba(255,255,255,0.25)" transform="rotate(-25 28 22)"/>
+                    <!-- Bottom text -->
+                    <text x="40" y="62" text-anchor="middle" font-size="7" font-weight="700" fill="#78350f" font-family="system-ui,sans-serif" opacity="0.6">HEADS</text>
+                  </svg>
+                </div>
+                <!-- TAILS face: H coin back -->
+                <div class="coin-back">
+                  <svg viewBox="0 0 80 80" width="80" height="80" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <radialGradient id="cfTail" cx="35%" cy="30%" r="80%">
+                        <stop offset="0%" stop-color="#d1fae5"/>
+                        <stop offset="55%" stop-color="#10b981"/>
+                        <stop offset="100%" stop-color="#064e3b"/>
+                      </radialGradient>
+                    </defs>
+                    <circle cx="40" cy="40" r="39" fill="url(#cfTail)" stroke="#065f46" stroke-width="1.5"/>
+                    <circle cx="40" cy="40" r="33" fill="none" stroke="rgba(6,95,70,0.4)" stroke-width="1"/>
+                    <!-- Big H -->
+                    <text x="40" y="50" text-anchor="middle" font-size="34" font-weight="900" fill="#064e3b" opacity="0.5" font-family="system-ui,sans-serif">H</text>
+                    <!-- Stars pattern -->
+                    <text x="21" y="30" font-size="8" fill="rgba(255,255,255,0.4)">★</text>
+                    <text x="53" y="56" font-size="8" fill="rgba(255,255,255,0.4)">★</text>
+                    <text x="54" y="28" font-size="6" fill="rgba(255,255,255,0.3)">✦</text>
+                    <text x="18" y="56" font-size="6" fill="rgba(255,255,255,0.3)">✦</text>
+                    <!-- Shine -->
+                    <ellipse cx="28" cy="22" rx="9" ry="5" fill="rgba(255,255,255,0.2)" transform="rotate(-25 28 22)"/>
+                    <!-- Bottom text -->
+                    <text x="40" y="68" text-anchor="middle" font-size="7" font-weight="700" fill="#064e3b" font-family="system-ui,sans-serif" opacity="0.8">TAILS</text>
+                  </svg>
+                </div>
+              </div></div></div>
               <div class="fl"><div class="fl-lbl">Your pick</div><div class="choice-row"><button class="ch on" id="c0-0" onclick="pickCoin(0)">Heads</button><button class="ch" id="c0-1" onclick="pickCoin(1)">Tails</button></div></div>
               <div class="fl"><div class="fl-lbl">Win probability</div><div class="pbar-track"><div class="pbar-fill" style="width:50%"></div></div><div class="pbar-meta"><span>0%</span><span>50%</span><span>100%</span></div></div>
               <div id="st-0"></div><div id="res-0"></div><div id="err-0"></div>
@@ -696,6 +829,22 @@ html,body { background:var(--bg); color:var(--text-1); font-family:'DM Sans',san
   </div><!-- /main -->
 </div><!-- /shell -->
 
+<!-- Mobile bottom nav -->
+<nav class="mobile-nav" id="mobile-nav">
+  <button class="mob-nav-item active" id="mob-games" onclick="showTab('games');setMobTab('games')">
+    <span>🎮</span>Games
+  </button>
+  <button class="mob-nav-item" id="mob-dex" onclick="showTab('dex');setMobTab('dex')">
+    <span>🔄</span>Swap
+  </button>
+  <button class="mob-nav-item" id="mob-pool" onclick="showTab('pool');setMobTab('pool')">
+    <span>💧</span>Pool
+  </button>
+  <button class="mob-nav-item" id="mob-hist" onclick="showTab('games');scrollToHistory();setMobTab('games')">
+    <span>📊</span>History
+  </button>
+</nav>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.9.0/ethers.umd.min.js"></script>
 <script>
 const HUB_ADDR = "0xF67dA5dE3b6c4D8675047eBf0DE71Dd9Ac96227C";
@@ -751,6 +900,15 @@ function showTab(name) {
   location.hash = name;
   if (name === 'dex') dexRefreshBalances();
   if (name === 'pool') poolRefresh();
+}
+function setMobTab(name) {
+  ['games','dex','pool','hist'].forEach(t => {
+    const el = document.getElementById('mob-'+t);
+    if (el) el.classList.toggle('active', t===name || (name==='games' && t==='hist'));
+  });
+  document.getElementById('mob-games').classList.toggle('active', name==='games');
+  document.getElementById('mob-dex').classList.toggle('active', name==='dex');
+  document.getElementById('mob-pool').classList.toggle('active', name==='pool');
 }
 
 // ── UI helpers ────────────────────────────────────────────────────────────────
@@ -815,7 +973,10 @@ async function doConnect(silent=false) {
     fun = new ethers.Contract(FUN_ADDR, FUN_ABI, signer);
     document.getElementById('token-link').href    = TOKEN_URL;
     document.getElementById('explorer-link').href = EXPLORER_URL;
+    const mobTokLink = document.getElementById('mob-token-link');
+    if (mobTokLink) mobTokLink.href = TOKEN_URL;
     await refreshFun();
+    loadHistFromStorage();
     setInterval(refreshFun, 14000);
 
     window.ethereum.removeAllListeners?.('chainChanged');
@@ -849,10 +1010,22 @@ function doDisconnect() {
 async function refreshFun() {
   if (!fun||!signer) return;
   try {
-    const bal = await fun.balanceOf(await signer.getAddress());
-    const fmt = parseFloat(ethers.formatEther(bal)).toFixed(2);
-    document.getElementById('s-fun').textContent = fmt;
-    document.getElementById('s-bal').innerHTML   = `${fmt}<small>FUN</small>`;
+    const addr = await signer.getAddress();
+    const [funBal, ethBal] = await Promise.all([
+      fun.balanceOf(addr),
+      provider.getBalance(addr)
+    ]);
+    const funFmt = parseFloat(ethers.formatEther(funBal)).toFixed(2);
+    const ethFmt = parseFloat(ethers.formatEther(ethBal)).toFixed(6);
+    // Sidebar
+    document.getElementById('s-fun').textContent = funFmt;
+    document.getElementById('s-bal').innerHTML   = `${funFmt}<small>FUN</small>`;
+    document.getElementById('s-eth-bal').innerHTML = `${ethFmt}<small>ETH</small>`;
+    // Mobile strip
+    const mobFun = document.getElementById('mob-fun-bal');
+    const mobEth = document.getElementById('mob-eth-bal');
+    if (mobFun) mobFun.innerHTML = `${funFmt}<small>FUN</small>`;
+    if (mobEth) mobEth.innerHTML = `${ethFmt}<small>ETH</small>`;
   } catch(_){}
 }
 
@@ -927,7 +1100,7 @@ async function doPlay(gi) {
     if(gi===0) showCoinResult(out.result);
     else if(gi===1) showDiceResult(out.result);
     else await animateWheel(out.result);
-    clearSt(gi); showRes(gi,out,bet,ch); updStats(out.won); addHist(gi,ch,out);
+    clearSt(gi); showRes(gi,out,bet,ch); updStats(out.won); addHist(gi,ch,out,bet);
     await refreshFun();
   } catch(e) {
     clearSt(gi);
@@ -947,22 +1120,52 @@ function showRes(gi,{won,result,payout,funRewarded},bet,ch) {
   const fFmt=parseFloat(ethers.formatEther(funRewarded)).toFixed(2);
   const chL=gi===0?(ch===0?'Heads':'Tails'):gi===1?`${ch}`:'—';
   const rL=gi===0?(result===0?'Heads':'Tails'):gi===1?`${result}`:result===0?'Jackpot':result<3?'Win':'No win';
-  document.getElementById(`res-${gi}`).innerHTML=`<div class="result-banner ${won?'win':'lose'}"><div class="r-ico">${won?'✅':'❌'}</div><div class="r-body"><div class="r-head">${won?'You won!':'You lost'}</div><div class="r-detail">Rolled ${rL} · picked ${chL}${won?` · +${pFmt} ETH`:''} ${won?`· +${fFmt} FUN`:''}</div></div></div>`;
+  const lossDetail = won
+    ? `+${pFmt} ETH · +${fFmt} FUN`
+    : `-${parseFloat(bet).toFixed(4)} ETH lost`;
+  document.getElementById(`res-${gi}`).innerHTML=`<div class="result-banner ${won?'win':'lose'}"><div class="r-ico">${won?'✅':'❌'}</div><div class="r-body"><div class="r-head">${won?'You won!':'You lost'}</div><div class="r-detail">Rolled ${rL} · picked ${chL} · ${lossDetail}</div></div></div>`;
 }
 function updStats(won) {
   plays++; if(won) wins++;
   document.getElementById('s-played').textContent=plays;
   document.getElementById('s-wr').textContent=plays>0?((wins/plays*100).toFixed(0)+'%'):'—';
 }
-function addHist(gi,ch,{won,result,payout,funRewarded}) {
+function addHist(gi,ch,{won,result,payout,funRewarded},bet) {
   const pFmt=parseFloat(ethers.formatEther(payout)).toFixed(6);
   const fFmt=parseFloat(ethers.formatEther(funRewarded)).toFixed(2);
+  const betFmt=parseFloat(bet).toFixed(4);
   const chL=gi===0?(ch===0?'Heads':'Tails'):gi===1?`${ch}`:'—';
   const rL=gi===0?(result===0?'Heads':'Tails'):gi===1?`${result}`:result===0?'Jackpot':result<3?'Win':'No win';
-  hist.unshift({gi,chL,rL,won,pFmt,fFmt});
-  if(hist.length>20) hist.pop();
+  hist.unshift({gi,chL,rL,won,pFmt,fFmt,betFmt});
+  if(hist.length>50) hist.pop();
+  // Persist to localStorage
+  try { localStorage.setItem('hubarb_hist', JSON.stringify(hist)); } catch(_){}
+  renderHist();
+}
+function renderHist() {
+  if(!hist.length) return;
   document.getElementById('hist-card').style.display='';
-  document.getElementById('hist-body').innerHTML=hist.map(h=>`<tr><td>${GNAMES[h.gi]}</td><td class="mono">${h.chL}</td><td class="mono">${h.rL}</td><td class="mono">${h.won?`+${h.pFmt} ETH`:'—'}</td><td class="mono">${h.won?`+${h.fFmt} FUN`:'—'}</td><td><span class="badge ${h.won?'badge-win':'badge-lose'}">${h.won?'Win':'Lose'}</span></td></tr>`).join('');
+  document.getElementById('hist-body').innerHTML=hist.map(h=>`<tr>
+    <td>${GNAMES[h.gi]}</td>
+    <td class="mono">${h.chL}</td>
+    <td class="mono">${h.rL}</td>
+    <td class="mono" style="color:${h.won?'var(--green)':'var(--red)'}">${h.won?`+${h.pFmt} ETH`:`-${h.betFmt} ETH`}</td>
+    <td class="mono">${h.won?`+${h.fFmt} FUN`:'—'}</td>
+    <td><span class="badge ${h.won?'badge-win':'badge-lose'}">${h.won?'Win':'Lose'}</span></td>
+  </tr>`).join('');
+}
+function loadHistFromStorage() {
+  try {
+    const saved = localStorage.getItem('hubarb_hist');
+    if (saved) {
+      hist = JSON.parse(saved);
+      plays = hist.length;
+      wins  = hist.filter(h=>h.won).length;
+      document.getElementById('s-played').textContent = plays;
+      document.getElementById('s-wr').textContent = plays>0?((wins/plays*100).toFixed(0)+'%'):'—';
+      renderHist();
+    }
+  } catch(_){}
 }
 
 // ── DEX ───────────────────────────────────────────────────────────────────────
