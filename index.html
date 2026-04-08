@@ -37,9 +37,9 @@ html,body { background:var(--bg); color:var(--text-1); font-family:'DM Sans',san
 .disconnect-btn:hover { background:var(--red-bg); color:var(--red); border-color:var(--red-bdr); }
 .sidebar { background:var(--surface); border-right:1px solid var(--border); padding:16px 12px; display:flex; flex-direction:column; gap:2px; overflow-y:auto; }
 .nav-section { font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-3); padding:10px 10px 5px; }
-.nav-item { display:flex; align-items:center; gap:9px; padding:8px 10px; border-radius:var(--r-sm); cursor:pointer; font-size:13px; font-weight:400; color:var(--text-2); border:1px solid transparent; transition:all .13s; user-select:none; }
+.nav-item { display:flex; align-items:center; gap:9px; padding:8px 10px; border-radius:var(--r-sm); cursor:pointer; font-size:11px; font-weight:600; letter-spacing:0.6px; color:var(--text-3); border:1px solid transparent; transition:all .13s; user-select:none; }
 .nav-item:hover { color:var(--text-1); background:var(--surface-2); }
-.nav-item.active { color:var(--text-1); background:var(--surface-3); border-color:var(--border); font-weight:500; }
+.nav-item.active { color:var(--text-1); background:var(--surface-3); border-color:var(--border); }
 .nav-ico { width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
 .nav-item.active .nav-ico { background:var(--accent-bg); }
 .nav-badge { margin-left:auto; font-size:10px; font-family:'DM Mono',monospace; color:var(--text-3); background:var(--surface-3); border-radius:100px; padding:2px 6px; }
@@ -76,7 +76,7 @@ html,body { background:var(--bg); color:var(--text-1); font-family:'DM Sans',san
 .gc-head:hover { background:var(--surface-2); }
 .gc-hl { display:flex; align-items:center; gap:12px; }
 .gc-ico { width:38px; height:38px; background:var(--surface-2); border:1px solid var(--border-md); border-radius:var(--r-sm); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
-.gc-name { font-size:14px; font-weight:600; color:var(--text-1); letter-spacing:-0.2px; }
+.gc-name { font-size:13px; font-weight:700; color:var(--text-1); letter-spacing:0.4px; }
 .gc-sub { font-size:12px; color:var(--text-3); margin-top:1px; }
 .gc-tags { display:flex; gap:5px; align-items:center; }
 .tag { font-size:11px; font-family:'DM Mono',monospace; border-radius:100px; padding:3px 9px; border:1px solid; }
@@ -274,23 +274,7 @@ html,body { background:var(--bg); color:var(--text-1); font-family:'DM Sans',san
 
   <div class="topbar">
     <div class="brand">
-      <div class="brand-mark">
-        <svg viewBox="0 0 28 28" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Coin base -->
-          <circle cx="14" cy="14" r="13" fill="url(#logoGold)" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
-          <!-- H letter -->
-          <text x="14" y="19" text-anchor="middle" font-size="13" font-weight="800" fill="#1a1200" font-family="system-ui,sans-serif" letter-spacing="-1">H</text>
-          <!-- Shine -->
-          <ellipse cx="10" cy="9" rx="4" ry="2.5" fill="rgba(255,255,255,0.22)" transform="rotate(-20 10 9)"/>
-          <defs>
-            <radialGradient id="logoGold" cx="35%" cy="30%" r="80%">
-              <stop offset="0%" stop-color="#fde68a"/>
-              <stop offset="55%" stop-color="#f59e0b"/>
-              <stop offset="100%" stop-color="#92400e"/>
-            </radialGradient>
-          </defs>
-        </svg>
-      </div>
+      <div class="brand-mark" style="background:var(--accent);border-radius:7px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#fff;font-family:'DM Sans',sans-serif;letter-spacing:-1px">H</div>
       <span class="brand-name">HUBARB</span>
       <span class="brand-chip">TESTNET</span>
     </div>
@@ -310,13 +294,13 @@ html,body { background:var(--bg); color:var(--text-1); font-family:'DM Sans',san
 
   <div class="sidebar">
     <div class="nav-section">Games</div>
-    <div class="nav-item" onclick="showTab('games');openGame(0)"><div class="nav-ico">🪙</div>Coin Flip<span class="nav-badge">1.9×</span></div>
-    <div class="nav-item" onclick="showTab('games');openGame(1)"><div class="nav-ico">🎲</div>Dice Roll<span class="nav-badge">5.7×</span></div>
-    <div class="nav-item" onclick="showTab('games');openGame(2)"><div class="nav-ico">🎡</div>Spin Wheel<span class="nav-badge">4.75×</span></div>
+    <div class="nav-item" onclick="showTab('games');openGame(0)">COIN FLIP<span class="nav-badge">1.9×</span></div>
+    <div class="nav-item" onclick="showTab('games');openGame(1)">DICE ROLL<span class="nav-badge">5.7×</span></div>
+    <div class="nav-item" onclick="showTab('games');openGame(2)">SPIN WHEEL<span class="nav-badge">4.75×</span></div>
     <div class="nav-section" style="margin-top:8px">Finance</div>
-    <div class="nav-item" onclick="showTab('dex')"><div class="nav-ico">🔄</div>Swap</div>
-    <div class="nav-item" onclick="showTab('pool')"><div class="nav-ico">💧</div>Liquidity Pool</div>
-    <div class="nav-item" onclick="showTab('games');scrollToHistory()"><div class="nav-ico">📊</div>History</div>
+    <div class="nav-item" onclick="showTab('dex')">SWAP</div>
+    <div class="nav-item" onclick="showTab('pool')">LIQUIDITY POOL</div>
+    <div class="nav-item" onclick="showTab('games');scrollToHistory()">HISTORY</div>
     <div class="s-footer">
       <div class="s-label">ETH balance</div>
       <div class="s-balance" id="s-eth-bal">0.000000<small>ETH</small></div>
@@ -373,64 +357,62 @@ html,body { background:var(--bg); color:var(--text-1); font-family:'DM Sans',san
         <!-- COIN FLIP -->
         <div class="gc open" id="gc-0">
           <div class="gc-head" onclick="toggleGc(0)">
-            <div class="gc-hl"><div class="gc-ico">🪙</div><div><div class="gc-name">Coin Flip</div><div class="gc-sub">Heads or tails · 50% chance to win</div></div></div>
+            <div class="gc-hl"><div><div class="gc-name">COIN FLIP</div><div class="gc-sub">Heads or tails · 50% chance to win</div></div></div>
             <div style="display:flex;align-items:center;gap:7px"><div class="gc-tags"><span class="tag tag-g">1.9× payout</span><span class="tag tag-b">50% odds</span></div><svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
           </div>
           <div class="gc-body"><div class="gc-inner">
             <div>
               <div class="vis" id="vis-0"><div class="coin-wrap"><div class="coin heads-result" id="coin-el">
-                <!-- HEADS face: HUBARB coin face -->
+                <!-- HEADS: gold coin with H -->
                 <div class="coin-face">
-                  <svg viewBox="0 0 80 80" width="80" height="80" xmlns="http://www.w3.org/2000/svg">
+                  <svg viewBox="0 0 100 100" width="100" height="100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
-                      <radialGradient id="cfHead" cx="35%" cy="30%" r="80%">
-                        <stop offset="0%" stop-color="#fef3c7"/>
-                        <stop offset="55%" stop-color="#f59e0b"/>
-                        <stop offset="100%" stop-color="#b45309"/>
+                      <radialGradient id="headGold" cx="38%" cy="32%" r="75%">
+                        <stop offset="0%" stop-color="#fef9c3"/>
+                        <stop offset="40%" stop-color="#fbbf24"/>
+                        <stop offset="100%" stop-color="#92400e"/>
+                      </radialGradient>
+                      <radialGradient id="headRim" cx="38%" cy="32%" r="75%">
+                        <stop offset="0%" stop-color="#fde68a"/>
+                        <stop offset="100%" stop-color="#78350f"/>
                       </radialGradient>
                     </defs>
-                    <circle cx="40" cy="40" r="39" fill="url(#cfHead)" stroke="#92400e" stroke-width="1.5"/>
-                    <circle cx="40" cy="40" r="33" fill="none" stroke="rgba(146,64,14,0.35)" stroke-width="1"/>
-                    <!-- Face outline -->
-                    <circle cx="40" cy="36" r="14" fill="#92400e" opacity="0.15"/>
-                    <!-- Eyes -->
-                    <circle cx="35" cy="33" r="2.5" fill="#78350f"/>
-                    <circle cx="45" cy="33" r="2.5" fill="#78350f"/>
-                    <circle cx="35.8" cy="32.2" r="0.9" fill="rgba(255,255,255,0.6)"/>
-                    <circle cx="45.8" cy="32.2" r="0.9" fill="rgba(255,255,255,0.6)"/>
-                    <!-- Smile -->
-                    <path d="M34 40 Q40 46 46 40" stroke="#78350f" stroke-width="2" fill="none" stroke-linecap="round"/>
-                    <!-- H letter crown -->
-                    <text x="40" y="24" text-anchor="middle" font-size="9" font-weight="800" fill="#78350f" font-family="system-ui,sans-serif" opacity="0.7">HUBARB</text>
+                    <!-- Rim -->
+                    <circle cx="50" cy="50" r="48" fill="url(#headRim)"/>
+                    <!-- Face -->
+                    <circle cx="50" cy="50" r="42" fill="url(#headGold)"/>
+                    <!-- Inner ring -->
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(120,53,15,0.25)" stroke-width="1.2"/>
+                    <!-- H letter -->
+                    <text x="50" y="67" text-anchor="middle" font-size="46" font-weight="900" fill="#78350f" font-family="system-ui,sans-serif" opacity="0.85">H</text>
                     <!-- Shine -->
-                    <ellipse cx="28" cy="22" rx="9" ry="5" fill="rgba(255,255,255,0.25)" transform="rotate(-25 28 22)"/>
-                    <!-- Bottom text -->
-                    <text x="40" y="62" text-anchor="middle" font-size="7" font-weight="700" fill="#78350f" font-family="system-ui,sans-serif" opacity="0.6">HEADS</text>
+                    <ellipse cx="34" cy="28" rx="12" ry="6" fill="rgba(255,255,255,0.28)" transform="rotate(-30 34 28)"/>
                   </svg>
                 </div>
-                <!-- TAILS face: H coin back -->
+                <!-- TAILS: silver coin with T -->
                 <div class="coin-back">
-                  <svg viewBox="0 0 80 80" width="80" height="80" xmlns="http://www.w3.org/2000/svg">
+                  <svg viewBox="0 0 100 100" width="100" height="100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
-                      <radialGradient id="cfTail" cx="35%" cy="30%" r="80%">
-                        <stop offset="0%" stop-color="#d1fae5"/>
-                        <stop offset="55%" stop-color="#10b981"/>
-                        <stop offset="100%" stop-color="#064e3b"/>
+                      <radialGradient id="tailSilver" cx="38%" cy="32%" r="75%">
+                        <stop offset="0%" stop-color="#f1f5f9"/>
+                        <stop offset="40%" stop-color="#94a3b8"/>
+                        <stop offset="100%" stop-color="#1e293b"/>
+                      </radialGradient>
+                      <radialGradient id="tailRim" cx="38%" cy="32%" r="75%">
+                        <stop offset="0%" stop-color="#e2e8f0"/>
+                        <stop offset="100%" stop-color="#334155"/>
                       </radialGradient>
                     </defs>
-                    <circle cx="40" cy="40" r="39" fill="url(#cfTail)" stroke="#065f46" stroke-width="1.5"/>
-                    <circle cx="40" cy="40" r="33" fill="none" stroke="rgba(6,95,70,0.4)" stroke-width="1"/>
-                    <!-- Big H -->
-                    <text x="40" y="50" text-anchor="middle" font-size="34" font-weight="900" fill="#064e3b" opacity="0.5" font-family="system-ui,sans-serif">H</text>
-                    <!-- Stars pattern -->
-                    <text x="21" y="30" font-size="8" fill="rgba(255,255,255,0.4)">★</text>
-                    <text x="53" y="56" font-size="8" fill="rgba(255,255,255,0.4)">★</text>
-                    <text x="54" y="28" font-size="6" fill="rgba(255,255,255,0.3)">✦</text>
-                    <text x="18" y="56" font-size="6" fill="rgba(255,255,255,0.3)">✦</text>
+                    <!-- Rim -->
+                    <circle cx="50" cy="50" r="48" fill="url(#tailRim)"/>
+                    <!-- Face -->
+                    <circle cx="50" cy="50" r="42" fill="url(#tailSilver)"/>
+                    <!-- Inner ring -->
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(30,41,59,0.2)" stroke-width="1.2"/>
+                    <!-- T letter -->
+                    <text x="50" y="67" text-anchor="middle" font-size="46" font-weight="900" fill="#1e293b" font-family="system-ui,sans-serif" opacity="0.8">T</text>
                     <!-- Shine -->
-                    <ellipse cx="28" cy="22" rx="9" ry="5" fill="rgba(255,255,255,0.2)" transform="rotate(-25 28 22)"/>
-                    <!-- Bottom text -->
-                    <text x="40" y="68" text-anchor="middle" font-size="7" font-weight="700" fill="#064e3b" font-family="system-ui,sans-serif" opacity="0.8">TAILS</text>
+                    <ellipse cx="34" cy="28" rx="12" ry="6" fill="rgba(255,255,255,0.35)" transform="rotate(-30 34 28)"/>
                   </svg>
                 </div>
               </div></div></div>
@@ -450,7 +432,7 @@ html,body { background:var(--bg); color:var(--text-1); font-family:'DM Sans',san
         <!-- DICE ROLL -->
         <div class="gc" id="gc-1">
           <div class="gc-head" onclick="toggleGc(1)">
-            <div class="gc-hl"><div class="gc-ico">🎲</div><div><div class="gc-name">Dice Roll</div><div class="gc-sub">Pick 1–6 · ~16.7% chance to win</div></div></div>
+            <div class="gc-hl"><div><div class="gc-name">DICE ROLL</div><div class="gc-sub">Pick 1–6 · ~16.7% chance to win</div></div></div>
             <div style="display:flex;align-items:center;gap:7px"><div class="gc-tags"><span class="tag tag-g">5.7× payout</span><span class="tag tag-b">16.7% odds</span></div><svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
           </div>
           <div class="gc-body"><div class="gc-inner">
@@ -479,7 +461,7 @@ html,body { background:var(--bg); color:var(--text-1); font-family:'DM Sans',san
         <!-- SPIN WHEEL -->
         <div class="gc" id="gc-2">
           <div class="gc-head" onclick="toggleGc(2)">
-            <div class="gc-hl"><div class="gc-ico">🎡</div><div><div class="gc-name">Spin Wheel</div><div class="gc-sub">Pure chance · jackpot 1-in-8</div></div></div>
+            <div class="gc-hl"><div><div class="gc-name">SPIN WHEEL</div><div class="gc-sub">Pure chance · jackpot 1-in-8</div></div></div>
             <div style="display:flex;align-items:center;gap:7px"><div class="gc-tags"><span class="tag tag-a">4.75× jackpot</span><span class="tag tag-g">1.9× win</span></div><svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
           </div>
           <div class="gc-body"><div class="gc-inner">
