@@ -601,6 +601,16 @@ html,body { background:var(--bg); color:var(--text-1); font-family:'DM Sans',san
           All transactions are on-chain on Arbitrum Sepolia.<br><br>
           <strong>Note:</strong> This is a testnet DEX. Tokens and ETH have no real value.
         </div>
+
+        <!-- Swap History -->
+        <div class="hist-card" id="swap-hist-card" style="display:none;margin-top:20px">
+          <div class="hist-head">Swap history</div>
+          <table class="hist-tbl">
+            <thead><tr><th>Direction</th><th>Amount In</th><th>Amount Out</th><th>Tx</th></tr></thead>
+            <tbody id="swap-hist-body"></tbody>
+          </table>
+        </div>
+
       </div><!-- /panel-dex -->
 
       <!-- POOL PANEL -->
@@ -671,17 +681,15 @@ html,body { background:var(--bg); color:var(--text-1); font-family:'DM Sans',san
           <strong>⚠️ Note:</strong> You need to deploy the <code>HubarbPool</code> contract first and set its address in <code>contracts.ts</code>. See the deploy guide below.
         </div>
 
-        <!-- Deploy guide -->
-        <div class="dex-card" style="margin-top:16px">
-          <div class="dex-title" style="margin-bottom:12px">📋 Deploy the Pool Contract</div>
-          <div style="font-size:12px;color:var(--text-2);line-height:1.8">
-            <strong style="color:var(--text-1)">1. Copy the Solidity below into your contracts/ folder as <code>HubarbPool.sol</code></strong><br>
-            <strong style="color:var(--text-1)">2. Run:</strong> <code style="background:var(--surface-3);padding:2px 6px;border-radius:4px">npx hardhat run scripts/deployPool.js --network arbSepolia</code><br>
-            <strong style="color:var(--text-1)">3. Set <code>POOL_ADDRESS</code> in contracts.ts to the deployed address</strong><br>
-            <strong style="color:var(--text-1)">4. Call <code>pool.setTokens(FUN_ADDR, WETH_ADDR)</code> as owner to initialize</strong>
-          </div>
-          <div style="margin-top:14px;background:var(--surface-3);border:1px solid var(--border);border-radius:var(--r);padding:14px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text-2);line-height:1.8;white-space:pre-wrap;overflow-x:auto" id="pool-sol-code"></div>
+        <!-- Liquidity History -->
+        <div class="hist-card" id="liq-hist-card" style="display:none;margin-top:20px">
+          <div class="hist-head">Liquidity history</div>
+          <table class="hist-tbl">
+            <thead><tr><th>Action</th><th>ETH</th><th>FUN</th><th>LP Tokens</th><th>Tx</th></tr></thead>
+            <tbody id="liq-hist-body"></tbody>
+          </table>
         </div>
+
       </div><!-- /panel-pool -->
 
     </div><!-- /game-view -->
@@ -713,6 +721,7 @@ let provider, signer, hub, fun;
 let connected = false;
 let coinPick = 0, dicePick = 6;
 let hist = [], plays = 0, wins = 0;
+let swapHist = [], liqHist = [];
 let dexDir = 0; // 0=ETH→FUN, 1=FUN→ETH
 
 // ── Auto-reconnect on reload ──────────────────────────────────────────────────
@@ -938,7 +947,7 @@ function showRes(gi,{won,result,payout,funRewarded},bet,ch) {
   const fFmt=parseFloat(ethers.formatEther(funRewarded)).toFixed(2);
   const chL=gi===0?(ch===0?'Heads':'Tails'):gi===1?`${ch}`:'—';
   const rL=gi===0?(result===0?'Heads':'Tails'):gi===1?`${result}`:result===0?'Jackpot':result<3?'Win':'No win';
-  document.getElementById(`res-${gi}`).innerHTML=`<div class="result-banner ${won?'win':'lose'}"><div class="r-ico">${won?'✅':'❌'}</div><div class="r-body"><div class="r-head">${won?'You won!':'You lost'}</div><div class="r-detail">Rolled ${rL} · picked ${chL}${won?` · +${pFmt} ETH`:''}${won&&funRewarded>0n?` · +${fFmt} FUN`:''}</div></div></div>`;
+  document.getElementById(`res-${gi}`).innerHTML=`<div class="result-banner ${won?'win':'lose'}"><div class="r-ico">${won?'✅':'❌'}</div><div class="r-body"><div class="r-head">${won?'You won!':'You lost'}</div><div class="r-detail">Rolled ${rL} · picked ${chL}${won?` · +${pFmt} ETH`:''} ${won?`· +${fFmt} FUN`:''}</div></div></div>`;
 }
 function updStats(won) {
   plays++; if(won) wins++;
@@ -953,7 +962,7 @@ function addHist(gi,ch,{won,result,payout,funRewarded}) {
   hist.unshift({gi,chL,rL,won,pFmt,fFmt});
   if(hist.length>20) hist.pop();
   document.getElementById('hist-card').style.display='';
-  document.getElementById('hist-body').innerHTML=hist.map(h=>`<tr><td>${GNAMES[h.gi]}</td><td class="mono">${h.chL}</td><td class="mono">${h.rL}</td><td class="mono">${h.won?`+${h.pFmt} ETH`:'—'}</td><td class="mono">${h.won&&h.fFmt!=='0.00'?`+${h.fFmt} FUN`:'—'}</td><td><span class="badge ${h.won?'badge-win':'badge-lose'}">${h.won?'Win':'Lose'}</span></td></tr>`).join('');
+  document.getElementById('hist-body').innerHTML=hist.map(h=>`<tr><td>${GNAMES[h.gi]}</td><td class="mono">${h.chL}</td><td class="mono">${h.rL}</td><td class="mono">${h.won?`+${h.pFmt} ETH`:'—'}</td><td class="mono">${h.won?`+${h.fFmt} FUN`:'—'}</td><td><span class="badge ${h.won?'badge-win':'badge-lose'}">${h.won?'Win':'Lose'}</span></td></tr>`).join('');
 }
 
 // ── DEX ───────────────────────────────────────────────────────────────────────
@@ -1055,6 +1064,7 @@ async function doSwap() {
       await tx.wait();
       const funOut = (fromAmt * 0.997 * Number(ethers.formatEther(funRes)) / Number(ethers.formatEther(ethRes))).toFixed(4);
       dexSetStatus('ok', `✅ Swapped ${fromAmt} ETH → ~${funOut} FUN &nbsp;·&nbsp; <a href="https://sepolia.arbiscan.io/tx/${tx.hash}" target="_blank" style="color:var(--green);text-decoration:underline">View tx ↗</a>`);
+      addSwapHist('ETH→FUN', fromAmt + ' ETH', funOut + ' FUN', tx.hash);
     } else {
       // FUN → ETH via pool.swapFunForEth()
       const funWei = ethers.parseEther(fromAmt.toString());
@@ -1071,6 +1081,7 @@ async function doSwap() {
       await tx.wait();
       const ethOut = (fromAmt * 0.997 * Number(ethers.formatEther(ethRes)) / Number(ethers.formatEther(funRes))).toFixed(6);
       dexSetStatus('ok', `✅ Swapped ${fromAmt} FUN → ~${ethOut} ETH &nbsp;·&nbsp; <a href="https://sepolia.arbiscan.io/tx/${tx.hash}" target="_blank" style="color:var(--green);text-decoration:underline">View tx ↗</a>`);
+      addSwapHist('FUN→ETH', fromAmt + ' FUN', ethOut + ' ETH', tx.hash);
     }
 
     document.getElementById('dex-from-amt').value = '';
@@ -1084,6 +1095,35 @@ async function doSwap() {
     if (msg.includes('429') || msg.includes('rate') || msg.includes('limit')) msg = '⚠️ RPC rate limit hit. Wait a few seconds and try again.';
     dexSetStatus('error', msg);
   } finally { btn.disabled = false; }
+}
+
+function addSwapHist(direction, amtIn, amtOut, txHash) {
+  swapHist.unshift({direction, amtIn, amtOut, txHash});
+  if (swapHist.length > 20) swapHist.pop();
+  document.getElementById('swap-hist-card').style.display = '';
+  document.getElementById('swap-hist-body').innerHTML = swapHist.map(s =>
+    `<tr>
+      <td class="mono">${s.direction}</td>
+      <td class="mono">${s.amtIn}</td>
+      <td class="mono">${s.amtOut}</td>
+      <td class="mono"><a href="https://sepolia.arbiscan.io/tx/${s.txHash}" target="_blank" style="color:var(--accent-lt)">View ↗</a></td>
+    </tr>`
+  ).join('');
+}
+
+function addLiqHist(action, ethAmt, funAmt, lpAmt, txHash) {
+  liqHist.unshift({action, ethAmt, funAmt, lpAmt, txHash});
+  if (liqHist.length > 20) liqHist.pop();
+  document.getElementById('liq-hist-card').style.display = '';
+  document.getElementById('liq-hist-body').innerHTML = liqHist.map(l =>
+    `<tr>
+      <td><span class="badge ${l.action==='Add'?'badge-win':'badge-lose'}">${l.action}</span></td>
+      <td class="mono">${l.ethAmt || '—'}</td>
+      <td class="mono">${l.funAmt || '—'}</td>
+      <td class="mono">${l.lpAmt || '—'}</td>
+      <td class="mono"><a href="https://sepolia.arbiscan.io/tx/${l.txHash}" target="_blank" style="color:var(--accent-lt)">View ↗</a></td>
+    </tr>`
+  ).join('');
 }
 
 // ── POOL ──────────────────────────────────────────────────────────────────────
@@ -1339,6 +1379,7 @@ async function doAddLiquidity() {
     await tx.wait();
 
     poolSetStatus('pool-add-status','ok',`✅ Liquidity added! <a href="https://sepolia.arbiscan.io/tx/${tx.hash}" target="_blank" style="color:var(--green);text-decoration:underline">View tx ↗</a>`);
+    addLiqHist('Add', ethIn + ' ETH', funIn + ' FUN', '—', tx.hash);
     document.getElementById('pool-eth-in').value = '';
     document.getElementById('pool-fun-in').value = '';
     await poolRefresh();
@@ -1362,6 +1403,7 @@ async function doRemoveLiquidity() {
     const tx = await pc.removeLiquidity(lpWei, { gasLimit: 200000n });
     await tx.wait();
     poolSetStatus('pool-rm-status','ok',`✅ Liquidity removed! <a href="https://sepolia.arbiscan.io/tx/${tx.hash}" target="_blank" style="color:var(--green);text-decoration:underline">View tx ↗</a>`);
+    addLiqHist('Remove', '—', '—', lpIn + ' LP', tx.hash);
     document.getElementById('pool-lp-in').value = '';
     await poolRefresh();
   } catch(e) {

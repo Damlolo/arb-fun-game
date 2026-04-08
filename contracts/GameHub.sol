@@ -39,8 +39,9 @@ contract GameHub is Ownable, ReentrancyGuard {
     uint256 public maxBet = 0.1 ether;
 
     /// @notice FUN tokens rewarded per wei bet on a win
-    /// e.g. 100 means 100 FUN per 1 ETH bet
-    uint256 public funRewardRate = 100;
+    /// e.g. 1_000_000 means 1 FUN per 0.000001 ETH (1e12 wei) wagered
+    /// Using a high rate ensures small bets (0.0001 ETH) still yield FUN rewards
+    uint256 public funRewardRate = 1_000_000;
 
     uint256 private _nonce;
 
