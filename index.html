@@ -827,8 +827,34 @@ html,body { background:var(--bg); color:var(--text-1); font-family:'DM Sans',san
   </button>
 </nav>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.9.0/ethers.umd.min.js"></script>
 <script>
+// ── Supabase ──────────────────────────────────────────────────────────────────
+// Replace these two values with your own from Supabase → Project Settings → API
+const SUPABASE_URL  = 'YOUR_SUPABASE_URL';   // e.g. https://abcxyz.supabase.co
+const SUPABASE_KEY  = 'YOUR_SUPABASE_ANON_KEY';
+const sb = (SUPABASE_URL !== 'YOUR_SUPABASE_URL')
+  ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  : null; // falls back to localStorage only if not configured
+
+async function sbInsert(table, row) {
+  if (!sb) return;
+  try { await sb.from(table).insert(row); } catch(_) {}
+}
+async function sbLoad(table, playerAddr) {
+  if (!sb) return null;
+  try {
+    const { data, error } = await sb.from(table)
+      .select('*')
+      .eq('player', playerAddr.toLowerCase())
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (error) return null;
+    return data;
+  } catch(_) { return null; }
+}
+
 const HUB_ADDR = "0xF67dA5dE3b6c4D8675047eBf0DE71Dd9Ac96227C";
 const FUN_ADDR = "0x92E79A3f212f6BD696a2ddB3da374e7776B4daaC";
 const CHAIN_ID = 421614;
@@ -1120,8 +1146,21 @@ function addHist(gi,ch,{won,result,payout,funRewarded},bet) {
   const rL=gi===0?(result===0?'Heads':'Tails'):gi===1?`${result}`:result===0?'Jackpot':result<3?'Win':'No win';
   hist.unshift({gi,chL,rL,won,pFmt,fFmt,betFmt});
   if(hist.length>50) hist.pop();
-  // Persist to localStorage
+  // Persist to localStorage (offline fallback)
   try { localStorage.setItem('hubarb_hist', JSON.stringify(hist)); } catch(_){}
+  // Persist to Supabase
+  signer?.getAddress().then(addr => {
+    sbInsert('game_history', {
+      player:       addr.toLowerCase(),
+      game_name:    GNAMES[gi],
+      choice:       chL,
+      result:       rL,
+      won,
+      payout_eth:   parseFloat(pFmt),
+      fun_rewarded: parseFloat(fFmt),
+      bet_eth:      parseFloat(betFmt),
+    });
+  });
   renderHist();
 }
 function renderHist() {
@@ -1136,7 +1175,33 @@ function renderHist() {
     <td><span class="badge ${h.won?'badge-win':'badge-lose'}">${h.won?'Win':'Lose'}</span></td>
   </tr>`).join('');
 }
-function loadHistFromStorage() {
+async function loadHistFromStorage() {
+  try {
+    const addr = await signer.getAddress();
+    // Try Supabase first
+    const data = await sbLoad('game_history', addr);
+    if (data && data.length > 0) {
+      hist = data.map(r => ({
+        gi:      GNAMES.indexOf(r.game_name),
+        chL:     r.choice,
+        rL:      r.result,
+        won:     r.won,
+        pFmt:    parseFloat(r.payout_eth||0).toFixed(6),
+        fFmt:    parseFloat(r.fun_rewarded||0).toFixed(2),
+        betFmt:  parseFloat(r.bet_eth||0).toFixed(4),
+      }));
+      plays = hist.length;
+      wins  = hist.filter(h=>h.won).length;
+      document.getElementById('s-played').textContent = plays;
+      document.getElementById('s-wr').textContent = plays>0?((wins/plays*100).toFixed(0)+'%'):'—';
+      renderHist();
+      // Also load swap and liquidity history
+      loadSwapHistFromDB(addr);
+      loadLiqHistFromDB(addr);
+      return;
+    }
+  } catch(_){}
+  // Fallback: localStorage
   try {
     const saved = localStorage.getItem('hubarb_hist');
     if (saved) {
@@ -1148,6 +1213,31 @@ function loadHistFromStorage() {
       renderHist();
     }
   } catch(_){}
+}
+
+async function loadSwapHistFromDB(addr) {
+  const data = await sbLoad('swap_history', addr);
+  if (!data || !data.length) return;
+  swapHist = data.map(r => ({
+    direction: r.direction,
+    amtIn:     r.amount_in,
+    amtOut:    r.amount_out,
+    txHash:    r.tx_hash,
+  }));
+  renderSwapHist();
+}
+
+async function loadLiqHistFromDB(addr) {
+  const data = await sbLoad('liquidity_history', addr);
+  if (!data || !data.length) return;
+  liqHist = data.map(r => ({
+    action:  r.action,
+    ethAmt:  r.eth_amount ? r.eth_amount + ' ETH' : '—',
+    funAmt:  r.fun_amount ? r.fun_amount + ' FUN' : '—',
+    lpAmt:   r.lp_tokens  ? r.lp_tokens  + ' LP'  : '—',
+    txHash:  r.tx_hash,
+  }));
+  renderLiqHist();
 }
 
 // ── DEX ───────────────────────────────────────────────────────────────────────
@@ -1284,7 +1374,22 @@ async function doSwap() {
 
 function addSwapHist(direction, amtIn, amtOut, txHash) {
   swapHist.unshift({direction, amtIn, amtOut, txHash});
-  if (swapHist.length > 20) swapHist.pop();
+  if (swapHist.length > 50) swapHist.pop();
+  // Save to Supabase
+  signer?.getAddress().then(addr => {
+    sbInsert('swap_history', {
+      player:     addr.toLowerCase(),
+      direction,
+      amount_in:  parseFloat(amtIn)  || 0,
+      amount_out: parseFloat(amtOut) || 0,
+      tx_hash:    txHash,
+    });
+  });
+  renderSwapHist();
+}
+
+function renderSwapHist() {
+  if (!swapHist.length) return;
   document.getElementById('swap-hist-card').style.display = '';
   document.getElementById('swap-hist-body').innerHTML = swapHist.map(s =>
     `<tr>
@@ -1298,14 +1403,30 @@ function addSwapHist(direction, amtIn, amtOut, txHash) {
 
 function addLiqHist(action, ethAmt, funAmt, lpAmt, txHash) {
   liqHist.unshift({action, ethAmt, funAmt, lpAmt, txHash});
-  if (liqHist.length > 20) liqHist.pop();
+  if (liqHist.length > 50) liqHist.pop();
+  // Save to Supabase
+  signer?.getAddress().then(addr => {
+    sbInsert('liquidity_history', {
+      player:     addr.toLowerCase(),
+      action,
+      eth_amount: parseFloat(ethAmt) || null,
+      fun_amount: parseFloat(funAmt) || null,
+      lp_tokens:  parseFloat(lpAmt)  || null,
+      tx_hash:    txHash,
+    });
+  });
+  renderLiqHist();
+}
+
+function renderLiqHist() {
+  if (!liqHist.length) return;
   document.getElementById('liq-hist-card').style.display = '';
   document.getElementById('liq-hist-body').innerHTML = liqHist.map(l =>
     `<tr>
       <td><span class="badge ${l.action==='Add'?'badge-win':'badge-lose'}">${l.action}</span></td>
       <td class="mono">${l.ethAmt || '—'}</td>
       <td class="mono">${l.funAmt || '—'}</td>
-      <td class="mono">${l.lpAmt || '—'}</td>
+      <td class="mono">${l.lpAmt  || '—'}</td>
       <td class="mono"><a href="https://sepolia.arbiscan.io/tx/${l.txHash}" target="_blank" style="color:var(--accent-lt)">View ↗</a></td>
     </tr>`
   ).join('');
