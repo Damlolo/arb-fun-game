@@ -249,6 +249,21 @@ contract HubarbPool is ERC20, Ownable, ReentrancyGuard {
 
     // ─── Receive ──────────────────────────────────────────────────────────────
 
-    /// @dev Accept plain ETH transfers (e.g. from removeLiquidity refunds).
-    receive() external payable {}
+    /// @dev Reject plain ETH transfers to prevent ethReserve desync.
+    ///      ETH must enter the pool only via addLiquidity or swapEthForFun,
+    ///      both of which update ethReserve atomically.
+    ///      Use sync() to reconcile if ETH arrives via selfdestruct/coinbase.
+    receive() external payable {
+        revert("Pool: use addLiquidity or swapEthForFun");
+    }
+
+    // ─── Sync ─────────────────────────────────────────────────────────────────
+
+    /// @notice Sync tracked reserves to actual token/ETH balances.
+    ///         Call this if reserves ever drift due to external transfers.
+    function sync() external nonReentrant {
+        require(address(funToken) != address(0), "Pool: not initialised");
+        ethReserve = address(this).balance;
+        funReserve = funToken.balanceOf(address(this));
+    }
 }

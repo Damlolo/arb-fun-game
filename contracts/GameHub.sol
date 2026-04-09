@@ -108,7 +108,8 @@ contract GameHub is Ownable, ReentrancyGuard {
 
     function withdraw(uint256 amount) external onlyOwner {
         require(address(this).balance >= amount, "GameHub: insufficient balance");
-        payable(msg.sender).transfer(amount);
+        (bool ok, ) = payable(msg.sender).call{value: amount}("");
+        require(ok, "GameHub: withdraw failed");
         emit FundsWithdrawn(msg.sender, amount);
     }
 
