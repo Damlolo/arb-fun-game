@@ -881,6 +881,26 @@ let hist = [], plays = 0, wins = 0;
 let swapHist = [], liqHist = [];
 let dexDir = 0; // 0=ETH→FUN, 1=FUN→ETH
 
+function walletHistKey(baseKey, addr) {
+  return `${baseKey}_${String(addr || '').toLowerCase()}`;
+}
+
+function resetHistoryState() {
+  hist = [];
+  swapHist = [];
+  liqHist = [];
+  plays = 0;
+  wins = 0;
+  document.getElementById('s-played').textContent = '0';
+  document.getElementById('s-wr').textContent = '—';
+  document.getElementById('hist-body').innerHTML = '';
+  document.getElementById('swap-hist-body').innerHTML = '';
+  document.getElementById('liq-hist-body').innerHTML = '';
+  document.getElementById('hist-card').style.display = 'none';
+  document.getElementById('swap-hist-card').style.display = 'none';
+  document.getElementById('liq-hist-card').style.display = 'none';
+}
+
 // ── Auto-reconnect on reload ──────────────────────────────────────────────────
 window.addEventListener('load', async () => {
   // Restore tab from URL hash
@@ -984,6 +1004,7 @@ async function doConnect(silent=false) {
     const mobTokLink = document.getElementById('mob-token-link');
     if (mobTokLink) mobTokLink.href = TOKEN_URL;
     await refreshFun();
+    resetHistoryState();
     loadHistFromStorage();
     setInterval(refreshFun, 14000);
 
@@ -1013,6 +1034,7 @@ function doDisconnect() {
   document.getElementById('game-view').style.display = 'none';
   document.getElementById('s-bal').innerHTML = '0.00<small>FUN</small>';
   document.getElementById('s-fun').textContent = '0.00';
+  resetHistoryState();
 }
 
 async function refreshFun() {
@@ -1147,7 +1169,11 @@ function addHist(gi,ch,{won,result,payout,funRewarded},bet) {
   hist.unshift({gi,chL,rL,won,pFmt,fFmt,betFmt});
   if(hist.length>50) hist.pop();
   // Persist to localStorage (offline fallback)
-  try { localStorage.setItem('hubarb_hist', JSON.stringify(hist)); } catch(_){}
+  signer?.getAddress().then(addr => {
+    try {
+      localStorage.setItem(walletHistKey('hubarb_hist', addr), JSON.stringify(hist));
+    } catch(_){}
+  });
   // Persist to Supabase
   signer?.getAddress().then(addr => {
     sbInsert('game_history', {
@@ -1164,7 +1190,11 @@ function addHist(gi,ch,{won,result,payout,funRewarded},bet) {
   renderHist();
 }
 function renderHist() {
-  if(!hist.length) return;
+  if(!hist.length) {
+    document.getElementById('hist-card').style.display='none';
+    document.getElementById('hist-body').innerHTML='';
+    return;
+  }
   document.getElementById('hist-card').style.display='';
   document.getElementById('hist-body').innerHTML=hist.map(h=>`<tr>
     <td>${GNAMES[h.gi]}</td>
@@ -1178,6 +1208,7 @@ function renderHist() {
 async function loadHistFromStorage() {
   try {
     const addr = await signer.getAddress();
+    resetHistoryState();
     // Try Supabase first
     const data = await sbLoad('game_history', addr);
     if (data && data.length > 0) {
@@ -1195,15 +1226,15 @@ async function loadHistFromStorage() {
       document.getElementById('s-played').textContent = plays;
       document.getElementById('s-wr').textContent = plays>0?((wins/plays*100).toFixed(0)+'%'):'—';
       renderHist();
-      // Also load swap and liquidity history
-      loadSwapHistFromDB(addr);
-      loadLiqHistFromDB(addr);
-      return;
     }
+    // Always load swap + liquidity history for the currently connected wallet.
+    await Promise.all([loadSwapHistFromDB(addr), loadLiqHistFromDB(addr)]);
+    if (hist.length > 0 || swapHist.length > 0 || liqHist.length > 0) return;
   } catch(_){}
   // Fallback: localStorage
   try {
-    const saved = localStorage.getItem('hubarb_hist');
+    const addr = await signer.getAddress();
+    const saved = localStorage.getItem(walletHistKey('hubarb_hist', addr));
     if (saved) {
       hist = JSON.parse(saved);
       plays = hist.length;
@@ -1217,7 +1248,11 @@ async function loadHistFromStorage() {
 
 async function loadSwapHistFromDB(addr) {
   const data = await sbLoad('swap_history', addr);
-  if (!data || !data.length) return;
+  if (!data || !data.length) {
+    swapHist = [];
+    renderSwapHist();
+    return;
+  }
   swapHist = data.map(r => ({
     direction: r.direction,
     amtIn:     r.amount_in,
@@ -1229,7 +1264,11 @@ async function loadSwapHistFromDB(addr) {
 
 async function loadLiqHistFromDB(addr) {
   const data = await sbLoad('liquidity_history', addr);
-  if (!data || !data.length) return;
+  if (!data || !data.length) {
+    liqHist = [];
+    renderLiqHist();
+    return;
+  }
   liqHist = data.map(r => ({
     action:  r.action,
     ethAmt:  r.eth_amount ? r.eth_amount + ' ETH' : '—',
@@ -1389,7 +1428,11 @@ function addSwapHist(direction, amtIn, amtOut, txHash) {
 }
 
 function renderSwapHist() {
-  if (!swapHist.length) return;
+  if (!swapHist.length) {
+    document.getElementById('swap-hist-card').style.display = 'none';
+    document.getElementById('swap-hist-body').innerHTML = '';
+    return;
+  }
   document.getElementById('swap-hist-card').style.display = '';
   document.getElementById('swap-hist-body').innerHTML = swapHist.map(s =>
     `<tr>
@@ -1419,7 +1462,11 @@ function addLiqHist(action, ethAmt, funAmt, lpAmt, txHash) {
 }
 
 function renderLiqHist() {
-  if (!liqHist.length) return;
+  if (!liqHist.length) {
+    document.getElementById('liq-hist-card').style.display = 'none';
+    document.getElementById('liq-hist-body').innerHTML = '';
+    return;
+  }
   document.getElementById('liq-hist-card').style.display = '';
   document.getElementById('liq-hist-body').innerHTML = liqHist.map(l =>
     `<tr>

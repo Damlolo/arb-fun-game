@@ -17,6 +17,7 @@
     "hardhat": "^3.3.0"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^5.0.0"
+    "@openzeppelin/contracts": "^5.0.0",
+    "@supabase/supabase-js": "^2.102.1"
   }
 }
