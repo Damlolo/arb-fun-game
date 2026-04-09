@@ -10,15 +10,26 @@ export const ARBITRUM_SEPOLIA_CHAIN_ID = 421614;
 //  ABIs (minimal — only what the frontend needs)
 // ─────────────────────────────────────────────────────────────────────────────
 export const GAME_HUB_ABI = [
-  // play
+  // commitPlay
   {
     inputs: [
       { internalType: "uint8", name: "game", type: "uint8" },
-      { internalType: "uint256", name: "choice", type: "uint256" },
+      { internalType: "bytes32", name: "commitment", type: "bytes32" },
     ],
-    name: "play",
+    name: "commitPlay",
     outputs: [],
     stateMutability: "payable",
+    type: "function",
+  },
+  // revealPlay
+  {
+    inputs: [
+      { internalType: "uint256", name: "choice", type: "uint256" },
+      { internalType: "bytes32", name: "secret", type: "bytes32" },
+    ],
+    name: "revealPlay",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   // houseBalance
@@ -82,10 +93,10 @@ export const FUN_TOKEN_ABI = [
 //  Uniswap swap link (update outputCurrency after deploying FunToken)
 // ─────────────────────────────────────────────────────────────────────────────
 export const UNISWAP_SWAP_URL =
-  `https://app.camelot.exchange/?chain=arbitrumSepolia&token2=${0x92E79A3f212f6BD696a2ddB3da374e7776B4daaC}`;
+  `https://app.camelot.exchange/?chain=arbitrumSepolia&token2=${FUN_TOKEN_ADDRESS}`;
 
 export const UNISWAP_ADD_LIQUIDITY_URL =
-  `https://app.camelot.exchange/liquidity?chain=arbitrumSepolia&token1=ETH&token2=${0x92E79A3f212f6BD696a2ddB3da374e7776B4daaC}`;
+  `https://app.camelot.exchange/liquidity?chain=arbitrumSepolia&token1=ETH&token2=${FUN_TOKEN_ADDRESS}`;
 
 // Game type enum — must match Solidity
 export enum GameType {
