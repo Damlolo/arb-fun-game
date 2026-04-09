@@ -862,8 +862,7 @@ const TOKEN_URL    = `https://sepolia.arbiscan.io/token/${FUN_ADDR}`;
 const EXPLORER_URL = `https://sepolia.arbiscan.io/address/${HUB_ADDR}`;
 
 const HUB_ABI = [
-  "function commitPlay(uint8 game, bytes32 commitment) external payable",
-  "function revealPlay(uint256 choice, bytes32 secret) external",
+  "function play(uint8 game, uint256 choice) external payable",
   "event GamePlayed(address indexed player, uint8 indexed game, uint256 choice, uint256 result, bool won, uint256 payout, uint256 funRewarded)",
 ];
 const FUN_ABI = [
@@ -881,16 +880,6 @@ let coinPick = 0, dicePick = 6;
 let hist = [], plays = 0, wins = 0;
 let swapHist = [], liqHist = [];
 let dexDir = 0; // 0=ETH→FUN, 1=FUN→ETH
-const DEFAULT_SLIPPAGE_BPS = 100n; // 1.00%
-
-function esc(v) {
-  return String(v ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
 
 function walletHistKey(baseKey, addr) {
   return `${baseKey}_${String(addr || '').toLowerCase()}`;
@@ -1122,28 +1111,16 @@ async function doPlay(gi) {
   ['st','res','err'].forEach(p=>{ document.getElementById(`${p}-${gi}`).innerHTML=''; });
   const btn=document.getElementById(`pb-${gi}`); btn.disabled=true;
   try {
-    setSt(gi,"Commit: sign in wallet…");
-    const secret = ethers.hexlify(ethers.randomBytes(32));
-    const commitment = ethers.solidityPackedKeccak256(
-      ['address','address','uint256','uint8','uint256','bytes32'],
-      [await signer.getAddress(), HUB_ADDR, CHAIN_ID, gi, ch, secret]
-    );
-    const commitTx=await hub.commitPlay(gi, commitment, { value: wei, gasLimit: 200000n });
-    setSt(gi,"Commit sent. Reveal next…",true);
-    const commitRx = await commitTx.wait();
-    const revealAt = Number(commitRx.blockNumber) + 1;
-    while (Number(await provider.getBlockNumber()) < revealAt) {
-      setSt(gi, "Waiting 1 block before reveal…", true);
-      await new Promise(r => setTimeout(r, 1200));
-    }
-
-    setSt(gi,"Reveal: sign second tx…",true);
+    setSt(gi,"Waiting for wallet…");
+    const txOpts={value:wei};
+    if(gi===2) txOpts.gasLimit=200000n;
+    const tx=await hub.play(gi,ch,txOpts);
+    setSt(gi,"Confirming on-chain…",true);
     let animP;
     if(gi===0) animP=animateCoin();
     else if(gi===1) animP=animateDice();
     else animP=Promise.resolve();
-    const revealTx=await hub.revealPlay(ch, secret, { gasLimit: 250000n });
-    const rx=await revealTx.wait();
+    const rx=await tx.wait();
     let out={won:false,result:0,payout:0n,funRewarded:0n};
     const iface=new ethers.Interface(HUB_ABI);
     for(const log of rx.logs){
@@ -1160,8 +1137,7 @@ async function doPlay(gi) {
     let msg=e.reason||e.shortMessage||e.message||"Transaction failed";
     if(msg.includes("insufficient house")||msg.includes("CALL_EXCEPTION")||msg.includes("estimateGas")) msg="House balance too low — try again later.";
     if(msg.includes("rejected")||msg.includes("denied")) msg="Transaction rejected.";
-    if(msg.includes("limit exceeded")||msg.includes("too fast per second")||msg.includes("api.zan.top")) msg="RPC rate-limited by wallet/provider. Wait a few seconds, then try again.";
-    document.getElementById(`err-${gi}`).innerHTML=`<div class="err-line">${esc(msg)}</div>`;
+    document.getElementById(`err-${gi}`).innerHTML=`<div class="err-line">${msg}</div>`;
   } finally { btn.disabled=false; }
 }
 
@@ -1221,11 +1197,11 @@ function renderHist() {
   }
   document.getElementById('hist-card').style.display='';
   document.getElementById('hist-body').innerHTML=hist.map(h=>`<tr>
-    <td>${esc(GNAMES[h.gi])}</td>
-    <td class="mono">${esc(h.chL)}</td>
-    <td class="mono">${esc(h.rL)}</td>
-    <td class="mono" style="color:${h.won?'var(--green)':'var(--red)'}">${h.won?`+${esc(h.pFmt)} ETH`:`-${esc(h.betFmt)} ETH`}</td>
-    <td class="mono">${h.won?`+${esc(h.fFmt)} FUN`:'—'}</td>
+    <td>${GNAMES[h.gi]}</td>
+    <td class="mono">${h.chL}</td>
+    <td class="mono">${h.rL}</td>
+    <td class="mono" style="color:${h.won?'var(--green)':'var(--red)'}">${h.won?`+${h.pFmt} ETH`:`-${h.betFmt} ETH`}</td>
+    <td class="mono">${h.won?`+${h.fFmt} FUN`:'—'}</td>
     <td><span class="badge ${h.won?'badge-win':'badge-lose'}">${h.won?'Win':'Lose'}</span></td>
   </tr>`).join('');
 }
@@ -1361,7 +1337,7 @@ async function dexSetMax() {
 function dexSetStatus(type,msg) {
   const el=document.getElementById('dex-status');
   el.className=`dex-status ${type}`;
-  el.innerHTML=type==='info'?`<div class="spin"></div>${esc(msg)}`:esc(msg);
+  el.innerHTML=type==='info'?`<div class="spin"></div>${msg}`:msg;
 }
 function dexClearStatus() {
   const el=document.getElementById('dex-status');
@@ -1397,9 +1373,7 @@ async function doSwap() {
         btn.disabled = false;
         return;
       }
-      const quotedFunOut = await pc.quoteEthForFun(wei);
-      const minFunOut = (quotedFunOut * (10000n - DEFAULT_SLIPPAGE_BPS)) / 10000n;
-      const tx = await pc.swapEthForFun(minFunOut, { value: wei, gasLimit: 150000n });
+      const tx = await pc.swapEthForFun({ value: wei, gasLimit: 150000n });
       dexSetStatus('info', 'Confirming transaction…');
       await tx.wait();
       const funOut = (fromAmt * 0.997 * Number(ethers.formatEther(funRes)) / Number(ethers.formatEther(ethRes))).toFixed(4);
@@ -1417,9 +1391,7 @@ async function doSwap() {
       const appTx = await fun.approve(POOL_ADDRESS, funWei, { gasLimit: 80000n });
       await appTx.wait();
       dexSetStatus('info', 'Swapping FUN for ETH…');
-      const quotedEthOut = await pc.quoteFunForEth(funWei);
-      const minEthOut = (quotedEthOut * (10000n - DEFAULT_SLIPPAGE_BPS)) / 10000n;
-      const tx = await pc.swapFunForEth(funWei, minEthOut, { gasLimit: 150000n });
+      const tx = await pc.swapFunForEth(funWei, { gasLimit: 150000n });
       await tx.wait();
       const ethOut = (fromAmt * 0.997 * Number(ethers.formatEther(ethRes)) / Number(ethers.formatEther(funRes))).toFixed(6);
       dexSetStatus('ok', `✅ Swapped ${fromAmt} FUN → ~${ethOut} ETH &nbsp;·&nbsp; <a href="https://sepolia.arbiscan.io/tx/${tx.hash}" target="_blank" style="color:var(--green);text-decoration:underline">View tx ↗</a>`);
@@ -1464,10 +1436,10 @@ function renderSwapHist() {
   document.getElementById('swap-hist-card').style.display = '';
   document.getElementById('swap-hist-body').innerHTML = swapHist.map(s =>
     `<tr>
-      <td class="mono">${esc(s.direction)}</td>
-      <td class="mono">${esc(s.amtIn)}</td>
-      <td class="mono">${esc(s.amtOut)}</td>
-      <td class="mono"><a href="https://sepolia.arbiscan.io/tx/${esc(s.txHash)}" target="_blank" style="color:var(--accent-lt)">View ↗</a></td>
+      <td class="mono">${s.direction}</td>
+      <td class="mono">${s.amtIn}</td>
+      <td class="mono">${s.amtOut}</td>
+      <td class="mono"><a href="https://sepolia.arbiscan.io/tx/${s.txHash}" target="_blank" style="color:var(--accent-lt)">View ↗</a></td>
     </tr>`
   ).join('');
 }
@@ -1498,11 +1470,11 @@ function renderLiqHist() {
   document.getElementById('liq-hist-card').style.display = '';
   document.getElementById('liq-hist-body').innerHTML = liqHist.map(l =>
     `<tr>
-      <td><span class="badge ${l.action==='Add'?'badge-win':'badge-lose'}">${esc(l.action)}</span></td>
-      <td class="mono">${esc(l.ethAmt || '—')}</td>
-      <td class="mono">${esc(l.funAmt || '—')}</td>
-      <td class="mono">${esc(l.lpAmt  || '—')}</td>
-      <td class="mono"><a href="https://sepolia.arbiscan.io/tx/${esc(l.txHash)}" target="_blank" style="color:var(--accent-lt)">View ↗</a></td>
+      <td><span class="badge ${l.action==='Add'?'badge-win':'badge-lose'}">${l.action}</span></td>
+      <td class="mono">${l.ethAmt || '—'}</td>
+      <td class="mono">${l.funAmt || '—'}</td>
+      <td class="mono">${l.lpAmt  || '—'}</td>
+      <td class="mono"><a href="https://sepolia.arbiscan.io/tx/${l.txHash}" target="_blank" style="color:var(--accent-lt)">View ↗</a></td>
     </tr>`
   ).join('');
 }
@@ -1512,17 +1484,15 @@ function renderLiqHist() {
 const POOL_ADDRESS = "0x07eFe12A668F1d4Eca51f2F0ee8ce6218EC891a5";
 
 const POOL_ABI = [
-  "function addLiquidity(uint256 funAmount, uint256 minLpOut) external payable returns (uint256 lpMinted)",
+  "function addLiquidity(uint256 funAmount) external payable returns (uint256 lpMinted)",
   "function removeLiquidity(uint256 lpAmount) external returns (uint256 ethOut, uint256 funOut)",
   "function getReserves() external view returns (uint256 ethReserve, uint256 funReserve)",
-  "function quoteEthForFun(uint256 ethIn) external view returns (uint256 funOut)",
-  "function quoteFunForEth(uint256 funIn) external view returns (uint256 ethOut)",
   "function totalSupply() external view returns (uint256)",
   "function balanceOf(address) external view returns (uint256)",
   "function ethReserve() external view returns (uint256)",
   "function funReserve() external view returns (uint256)",
-  "function swapEthForFun(uint256 minFunOut) external payable returns (uint256 funOut)",
-  "function swapFunForEth(uint256 funIn, uint256 minEthOut) external returns (uint256 ethOut)",
+  "function swapEthForFun() external payable returns (uint256 funOut)",
+  "function swapFunForEth(uint256 funIn) external returns (uint256 ethOut)",
 ];
 
 let pool = null;
@@ -1568,7 +1538,7 @@ contract HubarbPool is ERC20, Ownable, ReentrancyGuard {
     }
 
     /// @notice Add liquidity. Send ETH as msg.value; funAmount must be approved first.
-    function addLiquidity(uint256 funAmount, uint256 minLpOut)
+    function addLiquidity(uint256 funAmount)
         external payable nonReentrant returns (uint256 lpMinted)
     {
         require(address(funToken) != address(0), "Pool: not initialised");
@@ -1585,7 +1555,6 @@ contract HubarbPool is ERC20, Ownable, ReentrancyGuard {
             lpMinted = lpFromEth < lpFromFun ? lpFromEth : lpFromFun;
         }
         require(lpMinted > 0, "Pool: insufficient liquidity minted");
-        require(lpMinted >= minLpOut, "Pool: slippage");
 
         funToken.transferFrom(msg.sender, address(this), funAmount);
         ethReserve += msg.value;
@@ -1614,12 +1583,11 @@ contract HubarbPool is ERC20, Ownable, ReentrancyGuard {
     }
 
     /// @notice Swap ETH for FUN (send ETH as msg.value).
-    function swapEthForFun(uint256 minFunOut) external payable nonReentrant returns (uint256 funOut) {
+    function swapEthForFun() external payable nonReentrant returns (uint256 funOut) {
         require(msg.value > 0, "Pool: zero in");
         uint256 amtInFee = msg.value * FEE_NUM;
         funOut = (amtInFee * funReserve) / (ethReserve * FEE_DEN + amtInFee);
         require(funOut > 0 && funOut < funReserve, "Pool: insufficient liquidity");
-        require(funOut >= minFunOut, "Pool: slippage");
         ethReserve += msg.value;
         funReserve -= funOut;
         funToken.transfer(msg.sender, funOut);
@@ -1627,13 +1595,12 @@ contract HubarbPool is ERC20, Ownable, ReentrancyGuard {
     }
 
     /// @notice Swap FUN for ETH (approve pool first).
-    function swapFunForEth(uint256 funIn, uint256 minEthOut) external nonReentrant returns (uint256 ethOut) {
+    function swapFunForEth(uint256 funIn) external nonReentrant returns (uint256 ethOut) {
         require(funIn > 0, "Pool: zero in");
         funToken.transferFrom(msg.sender, address(this), funIn);
         uint256 amtInFee = funIn * FEE_NUM;
         ethOut = (amtInFee * ethReserve) / (funReserve * FEE_DEN + amtInFee);
         require(ethOut > 0 && ethOut < ethReserve, "Pool: insufficient liquidity");
-        require(ethOut >= minEthOut, "Pool: slippage");
         funReserve += funIn;
         ethReserve -= ethOut;
         (bool ok,) = payable(msg.sender).call{value: ethOut}("");
@@ -1737,7 +1704,7 @@ async function poolMaxLp() {
 function poolSetStatus(id, type, msg) {
   const el = document.getElementById(id);
   el.className = `dex-status ${type}`;
-  el.innerHTML = type === 'info' ? `<div class="spin"></div>${esc(msg)}` : esc(msg);
+  el.innerHTML = type === 'info' ? `<div class="spin"></div>${msg}` : msg;
 }
 function poolClearStatus(id) {
   const el = document.getElementById(id);
@@ -1761,16 +1728,7 @@ async function doAddLiquidity() {
     await appTx.wait();
 
     poolSetStatus('pool-add-status','info','Adding liquidity…');
-    const [ethRes, funRes] = await pc.getReserves();
-    const totalLp = await pc.totalSupply();
-    let minLpOut = 0n;
-    if (totalLp > 0n && ethRes > 0n && funRes > 0n) {
-      const lpFromEth = (ethWei * totalLp) / ethRes;
-      const lpFromFun = (funWei * totalLp) / funRes;
-      const expectedLp = lpFromEth < lpFromFun ? lpFromEth : lpFromFun;
-      minLpOut = (expectedLp * (10000n - DEFAULT_SLIPPAGE_BPS)) / 10000n;
-    }
-    const tx = await pc.addLiquidity(funWei, minLpOut, { value: ethWei, gasLimit: 250000n });
+    const tx = await pc.addLiquidity(funWei, { value: ethWei, gasLimit: 250000n });
     await tx.wait();
 
     poolSetStatus('pool-add-status','ok',`✅ Liquidity added! <a href="https://sepolia.arbiscan.io/tx/${tx.hash}" target="_blank" style="color:var(--green);text-decoration:underline">View tx ↗</a>`);

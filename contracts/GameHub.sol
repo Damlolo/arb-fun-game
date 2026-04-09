@@ -13,8 +13,9 @@ interface IFunToken {
  * @notice On-chain arcade: Coin Flip, Dice Roll, Spin Wheel
  *         Winners receive ETH payout + FUN token rewards.
  *
- * Randomness: commit-reveal using future blockhash + user secret.
- * Players first commit a hash, then reveal in a later block.
+ * Randomness: keccak256(block.timestamp, msg.sender, block.prevrandao)
+ * NOTE: block.prevrandao is available on Arbitrum Sepolia (post-Merge).
+ *       For mainnet, upgrade to Chainlink VRF.
  *
  * House Edge:
  *   Coin Flip  — 50% chance, 1.9x payout  (5% edge)
@@ -43,17 +44,6 @@ contract GameHub is Ownable, ReentrancyGuard {
     uint256 public funRewardRate = 1_000_000;
 
     uint256 private _nonce;
-    uint256 public commitDelayBlocks = 1;
-    uint256 public commitExpiryBlocks = 200;
-
-    struct PendingGame {
-        GameType game;
-        uint256 betAmount;
-        uint256 commitBlock;
-        bytes32 commitment;
-    }
-
-    mapping(address => PendingGame) public pendingGames;
 
     // ─── Events ───────────────────────────────────────────────────────────────
 
@@ -70,8 +60,6 @@ contract GameHub is Ownable, ReentrancyGuard {
     event FundsDeposited(address indexed by, uint256 amount);
     event FundsWithdrawn(address indexed to, uint256 amount);
     event FunTokenSet(address token);
-    event GameCommitted(address indexed player, GameType indexed game, uint256 betAmount, bytes32 commitment, uint256 commitBlock);
-    event GameCommitExpired(address indexed player, uint256 betAmount, uint256 commitBlock);
 
     // ─── Constructor ──────────────────────────────────────────────────────────
 
@@ -94,38 +82,26 @@ contract GameHub is Ownable, ReentrancyGuard {
         maxBet = _max;
     }
 
-    function setCommitWindows(uint256 delayBlocks, uint256 expiryBlocks) external onlyOwner {
-        require(delayBlocks > 0, "GameHub: delay=0");
-        require(expiryBlocks > delayBlocks, "GameHub: expiry <= delay");
-        require(expiryBlocks <= 250, "GameHub: expiry too high");
-        commitDelayBlocks = delayBlocks;
-        commitExpiryBlocks = expiryBlocks;
-    }
-
     function deposit() external payable onlyOwner {
         emit FundsDeposited(msg.sender, msg.value);
     }
 
     function withdraw(uint256 amount) external onlyOwner {
         require(address(this).balance >= amount, "GameHub: insufficient balance");
-        (bool ok, ) = payable(msg.sender).call{value: amount}("");
-        require(ok, "GameHub: withdraw failed");
+        payable(msg.sender).transfer(amount);
         emit FundsWithdrawn(msg.sender, amount);
     }
 
     // ─── Randomness ───────────────────────────────────────────────────────────
 
-    function _rand(bytes32 seed, uint256 commitBlock) internal returns (uint256) {
+    function _rand() internal returns (uint256) {
         _nonce++;
-        bytes32 bh = blockhash(commitBlock + commitDelayBlocks);
-        require(bh != bytes32(0), "GameHub: stale commit");
         return uint256(
             keccak256(
                 abi.encodePacked(
-                    bh,
-                    seed,
+                    block.timestamp,
+                    block.prevrandao,
                     msg.sender,
-                    address(this),
                     _nonce
                 )
             )
@@ -139,81 +115,40 @@ contract GameHub is Ownable, ReentrancyGuard {
      * @param game  GameType enum value
      * @param choice COINFLIP: 0=heads 1=tails | DICE: 1-6 | WHEEL: ignored
      */
-    function commitPlay(GameType game, bytes32 commitment) external payable nonReentrant {
+    function play(GameType game, uint256 choice)
+        external
+        payable
+        nonReentrant
+    {
         require(msg.value >= minBet, "GameHub: bet below minimum");
         require(msg.value <= maxBet, "GameHub: bet above maximum");
-        require(commitment != bytes32(0), "GameHub: bad commitment");
-        require(pendingGames[msg.sender].betAmount == 0, "GameHub: pending game exists");
 
-        pendingGames[msg.sender] = PendingGame({
-            game: game,
-            betAmount: msg.value,
-            commitBlock: block.number,
-            commitment: commitment
-        });
-
-        emit GameCommitted(msg.sender, game, msg.value, commitment, block.number);
-    }
-
-    /**
-     * @notice Reveal your committed choice and secret.
-     * @param choice COINFLIP: 0=heads 1=tails | DICE: 1-6 | WHEEL: ignored
-     * @param secret bytes32 secret used when creating the commitment
-     */
-    function revealPlay(uint256 choice, bytes32 secret) external nonReentrant {
-        PendingGame memory p = pendingGames[msg.sender];
-        require(p.betAmount > 0, "GameHub: no pending game");
-        require(
-            block.number >= p.commitBlock + commitDelayBlocks,
-            "GameHub: wait for commit delay"
-        );
-        require(
-            block.number <= p.commitBlock + commitExpiryBlocks,
-            "GameHub: commit expired"
-        );
-
-        bytes32 expected = keccak256(
-            abi.encodePacked(
-                msg.sender,
-                address(this),
-                block.chainid,
-                p.game,
-                choice,
-                secret
-            )
-        );
-        require(expected == p.commitment, "GameHub: bad reveal");
-
-        delete pendingGames[msg.sender];
-
-        uint256 rand = _rand(secret, p.commitBlock);
+        uint256 rand = _rand();
         uint256 result;
         uint256 payout;
         bool won;
-        GameType game = p.game;
-        uint256 betAmount = p.betAmount;
 
         if (game == GameType.COINFLIP) {
             require(choice == 0 || choice == 1, "GameHub: choice must be 0 or 1");
             result = rand % 2;
             won = (choice == result);
             if (won) {
-                payout = (betAmount * 190) / 100; // 1.9x
+                payout = (msg.value * 190) / 100; // 1.9x
             }
         } else if (game == GameType.DICE) {
             require(choice >= 1 && choice <= 6, "GameHub: choice must be 1-6");
             result = (rand % 6) + 1;
             won = (choice == result);
             if (won) {
-                payout = (betAmount * 570) / 100; // 5.7x
+                payout = (msg.value * 570) / 100; // 5.7x
             }
         } else if (game == GameType.WHEEL) {
             result = rand % 8;
             if (result == 0) {
-                payout = (betAmount * 475) / 100; // 4.75x — jackpot (1 in 8)
+                payout = (msg.value * 475) / 100; // 4.75x — jackpot (1 in 8)
                 won = true;
             } else if (result < 3) {
-                payout = (betAmount * 190) / 100; // 1.9x — near miss (2 in 8)
+                payout = (msg.value * 190) / 100; // 1.9x — near miss (2 in 8)
                 won = true;
             } else {
                 payout = 0; // lose (5 in 8)
@@ -236,7 +171,7 @@ contract GameHub is Ownable, ReentrancyGuard {
             // Mint FUN reward tokens
             if (address(funToken) != address(0)) {
                 // funRewardRate FUN per ETH wagered
-                funRewarded = (betAmount * funRewardRate) / 1 ether;
+                funRewarded = (msg.value * funRewardRate) / 1 ether;
                 if (funRewarded > 0) {
                     funToken.mint(msg.sender, funRewarded);
                 }
@@ -252,23 +187,6 @@ contract GameHub is Ownable, ReentrancyGuard {
             payout,
             funRewarded
         );
-    }
-
-    /// @notice Clears an expired commitment (funds remain in the house bankroll).
-    function clearExpiredCommitment(address player) external {
-        PendingGame memory p = pendingGames[player];
-        require(p.betAmount > 0, "GameHub: no pending game");
-        require(
-            block.number > p.commitBlock + commitExpiryBlocks,
-            "GameHub: commit not expired"
-        );
-        delete pendingGames[player];
-        emit GameCommitExpired(player, p.betAmount, p.commitBlock);
-    }
-
-    /// @dev Deprecated insecure single-tx flow, kept to avoid accidental use.
-    function play(GameType, uint256) external payable {
-        revert("GameHub: use commitPlay + revealPlay");
     }
 
     // ─── View Helpers ─────────────────────────────────────────────────────────

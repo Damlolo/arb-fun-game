@@ -1,6 +1,4 @@
 import { network } from "hardhat";
-import dotenv from "dotenv";
-dotenv.config();
 
 async function main() {
   const { ethers } = await network.connect("arbitrumSepolia");
@@ -21,10 +19,7 @@ async function main() {
   console.log("✅ HubarbPool deployed to:", poolAddress);
 
   // Auto-initialize with your FUN token
-  const FUN_TOKEN = process.env.FUN_TOKEN_ADDRESS;
-  if (!FUN_TOKEN) {
-    throw new Error("FUN_TOKEN_ADDRESS not set in environment.");
-  }
+  const FUN_TOKEN = "0x92E79A3f212f6BD696a2ddB3da374e7776B4daaC";
   console.log("Initializing pool with FUN token:", FUN_TOKEN);
 
   const tx = await pool.setTokens(FUN_TOKEN);

@@ -10,26 +10,15 @@ export const ARBITRUM_SEPOLIA_CHAIN_ID = 421614;
 //  ABIs (minimal — only what the frontend needs)
 // ─────────────────────────────────────────────────────────────────────────────
 export const GAME_HUB_ABI = [
-  // commitPlay
+  // play
   {
     inputs: [
       { internalType: "uint8", name: "game", type: "uint8" },
-      { internalType: "bytes32", name: "commitment", type: "bytes32" },
+      { internalType: "uint256", name: "choice", type: "uint256" },
     ],
-    name: "commitPlay",
+    name: "play",
     outputs: [],
     stateMutability: "payable",
-    type: "function",
-  },
-  // revealPlay
-  {
-    inputs: [
-      { internalType: "uint256", name: "choice", type: "uint256" },
-      { internalType: "bytes32", name: "secret", type: "bytes32" },
-    ],
-    name: "revealPlay",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
   // houseBalance
@@ -72,51 +61,6 @@ export const GAME_HUB_ABI = [
   },
 ] as const;
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  Extended ABI — additional entries needed for stuck-game recovery and
-//  correct block-delay calculation. Kept separate so GAME_HUB_ABI stays minimal.
-// ─────────────────────────────────────────────────────────────────────────────
-export const GAME_HUB_ABI_EXTENDED = [
-  ...GAME_HUB_ABI,
-  // pendingGames — read a player's pending commit
-  {
-    inputs: [{ internalType: "address", name: "", type: "address" }],
-    name: "pendingGames",
-    outputs: [
-      { internalType: "uint8",   name: "game",        type: "uint8"   },
-      { internalType: "uint256", name: "betAmount",   type: "uint256" },
-      { internalType: "uint256", name: "commitBlock", type: "uint256" },
-      { internalType: "bytes32", name: "commitment",  type: "bytes32" },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  // commitDelayBlocks — how many blocks to wait before revealing
-  {
-    inputs: [],
-    name: "commitDelayBlocks",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  // commitExpiryBlocks — how many blocks before a commit expires
-  {
-    inputs: [],
-    name: "commitExpiryBlocks",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  // clearExpiredCommitment — clears a stuck/expired pending game
-  {
-    inputs: [{ internalType: "address", name: "player", type: "address" }],
-    name: "clearExpiredCommitment",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-] as const;
-
 export const FUN_TOKEN_ABI = [
   {
     inputs: [{ internalType: "address", name: "account", type: "address" }],
@@ -138,10 +82,10 @@ export const FUN_TOKEN_ABI = [
 //  Uniswap swap link (update outputCurrency after deploying FunToken)
 // ─────────────────────────────────────────────────────────────────────────────
 export const UNISWAP_SWAP_URL =
-  `https://app.camelot.exchange/?chain=arbitrumSepolia&token2=${FUN_TOKEN_ADDRESS}`;
+  `https://app.camelot.exchange/?chain=arbitrumSepolia&token2=${0x92E79A3f212f6BD696a2ddB3da374e7776B4daaC}`;
 
 export const UNISWAP_ADD_LIQUIDITY_URL =
-  `https://app.camelot.exchange/liquidity?chain=arbitrumSepolia&token1=ETH&token2=${FUN_TOKEN_ADDRESS}`;
+  `https://app.camelot.exchange/liquidity?chain=arbitrumSepolia&token1=ETH&token2=${0x92E79A3f212f6BD696a2ddB3da374e7776B4daaC}`;
 
 // Game type enum — must match Solidity
 export enum GameType {
