@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /**
  * @title HubarbPool
@@ -19,6 +20,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
  * ────────────────────────────────────────────────────────────────────────────
  */
 contract HubarbPool is ERC20, Ownable, ReentrancyGuard {
+    using SafeERC20 for IERC20;
 
     // ─── State ────────────────────────────────────────────────────────────────
 
@@ -63,6 +65,7 @@ contract HubarbPool is ERC20, Ownable, ReentrancyGuard {
     /// @notice Set the FUN token address. Call once after deployment.
     function setTokens(address _fun) external onlyOwner {
         require(_fun != address(0), "Pool: zero address");
+        require(address(funToken) == address(0), "Pool: token already set");
         funToken = IERC20(_fun);
     }
 
@@ -79,7 +82,7 @@ contract HubarbPool is ERC20, Ownable, ReentrancyGuard {
      * of the two proportions is used and any excess is NOT refunded — callers
      * should calculate the exact ratio off-chain before calling.
      */
-    function addLiquidity(uint256 funAmount)
+    function addLiquidity(uint256 funAmount, uint256 minLpOut)
         external
         payable
         nonReentrant
@@ -101,8 +104,9 @@ contract HubarbPool is ERC20, Ownable, ReentrancyGuard {
         }
 
         require(lpMinted > 0, "Pool: insufficient liquidity minted");
+        require(lpMinted >= minLpOut, "Pool: slippage");
 
-        funToken.transferFrom(msg.sender, address(this), funAmount);
+        funToken.safeTransferFrom(msg.sender, address(this), funAmount);
         ethReserve += msg.value;
         funReserve += funAmount;
         _mint(msg.sender, lpMinted);
@@ -133,7 +137,7 @@ contract HubarbPool is ERC20, Ownable, ReentrancyGuard {
         ethReserve -= ethOut;
         funReserve -= funOut;
 
-        funToken.transfer(msg.sender, funOut);
+        funToken.safeTransfer(msg.sender, funOut);
         (bool ok, ) = payable(msg.sender).call{value: ethOut}("");
         require(ok, "Pool: ETH transfer failed");
 
@@ -147,7 +151,7 @@ contract HubarbPool is ERC20, Ownable, ReentrancyGuard {
      *         Send the ETH you want to swap as msg.value.
      * @return funOut  FUN tokens received by the caller.
      */
-    function swapEthForFun()
+    function swapEthForFun(uint256 minFunOut)
         external
         payable
         nonReentrant
@@ -161,10 +165,11 @@ contract HubarbPool is ERC20, Ownable, ReentrancyGuard {
 
         require(funOut > 0,          "Pool: insufficient output");
         require(funOut < funReserve, "Pool: insufficient liquidity");
+        require(funOut >= minFunOut, "Pool: slippage");
 
         ethReserve += msg.value;
         funReserve -= funOut;
-        funToken.transfer(msg.sender, funOut);
+        funToken.safeTransfer(msg.sender, funOut);
 
         emit Swap(msg.sender, address(0), msg.value, funOut);
     }
@@ -175,20 +180,21 @@ contract HubarbPool is ERC20, Ownable, ReentrancyGuard {
      * @param funIn    Amount of FUN to swap.
      * @return ethOut  ETH received by the caller.
      */
-    function swapFunForEth(uint256 funIn)
+    function swapFunForEth(uint256 funIn, uint256 minEthOut)
         external
         nonReentrant
         returns (uint256 ethOut)
     {
         require(funIn > 0, "Pool: zero in");
 
-        funToken.transferFrom(msg.sender, address(this), funIn);
+        funToken.safeTransferFrom(msg.sender, address(this), funIn);
 
         uint256 amtInWithFee = funIn * FEE_NUM;
         ethOut = (amtInWithFee * ethReserve) / (funReserve * FEE_DEN + amtInWithFee);
 
         require(ethOut > 0,          "Pool: insufficient output");
         require(ethOut < ethReserve, "Pool: insufficient liquidity");
+        require(ethOut >= minEthOut, "Pool: slippage");
 
         funReserve += funIn;
         ethReserve -= ethOut;
