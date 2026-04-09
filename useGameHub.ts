@@ -105,9 +105,13 @@ export function useGameHub() {
 
         setStatus("processing");
 
-        await publicClient.waitForTransactionReceipt({
+        const commitReceipt = await publicClient.waitForTransactionReceipt({
           hash: commitTx,
         });
+        const revealAt = commitReceipt.blockNumber + 1n;
+        while ((await publicClient.getBlockNumber()) < revealAt) {
+          await new Promise((r) => setTimeout(r, 1200));
+        }
 
         // Reveal transaction
         const txHash = await walletClient.writeContract({
@@ -166,6 +170,12 @@ export function useGameHub() {
           setError("House is out of ETH. Try again later.");
         } else if (msg.includes("User rejected")) {
           setError("Transaction rejected.");
+        } else if (
+          msg.includes("limit exceeded") ||
+          msg.includes("too fast per second") ||
+          msg.includes("api.zan.top")
+        ) {
+          setError("RPC rate-limited by wallet/provider. Wait a few seconds and retry.");
         } else {
           setError(msg);
         }

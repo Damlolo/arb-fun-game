@@ -1130,7 +1130,12 @@ async function doPlay(gi) {
     );
     const commitTx=await hub.commitPlay(gi, commitment, { value: wei, gasLimit: 200000n });
     setSt(gi,"Commit sent. Reveal next…",true);
-    await commitTx.wait();
+    const commitRx = await commitTx.wait();
+    const revealAt = Number(commitRx.blockNumber) + 1;
+    while (Number(await provider.getBlockNumber()) < revealAt) {
+      setSt(gi, "Waiting 1 block before reveal…", true);
+      await new Promise(r => setTimeout(r, 1200));
+    }
 
     setSt(gi,"Reveal: sign second tx…",true);
     let animP;
@@ -1155,6 +1160,7 @@ async function doPlay(gi) {
     let msg=e.reason||e.shortMessage||e.message||"Transaction failed";
     if(msg.includes("insufficient house")||msg.includes("CALL_EXCEPTION")||msg.includes("estimateGas")) msg="House balance too low — try again later.";
     if(msg.includes("rejected")||msg.includes("denied")) msg="Transaction rejected.";
+    if(msg.includes("limit exceeded")||msg.includes("too fast per second")||msg.includes("api.zan.top")) msg="RPC rate-limited by wallet/provider. Wait a few seconds, then try again.";
     document.getElementById(`err-${gi}`).innerHTML=`<div class="err-line">${esc(msg)}</div>`;
   } finally { btn.disabled=false; }
 }

@@ -163,7 +163,7 @@ contract GameHub is Ownable, ReentrancyGuard {
         PendingGame memory p = pendingGames[msg.sender];
         require(p.betAmount > 0, "GameHub: no pending game");
         require(
-            block.number > p.commitBlock + commitDelayBlocks,
+            block.number >= p.commitBlock + commitDelayBlocks,
             "GameHub: wait for commit delay"
         );
         require(
