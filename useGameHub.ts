@@ -5,7 +5,14 @@ import {
   usePublicClient,
   useReadContract,
 } from "wagmi";
-import { parseEther, formatEther, decodeEventLog } from "viem";
+import {
+  parseEther,
+  formatEther,
+  decodeEventLog,
+  encodePacked,
+  keccak256,
+  toHex,
+} from "viem";
 import {
   GAME_HUB_ADDRESS,
   FUN_TOKEN_ADDRESS,
@@ -70,19 +77,46 @@ export function useGameHub() {
 
       try {
         const betWei = parseEther(betEth);
+        const secret = keccak256(
+          toHex(`${Date.now()}-${Math.random()}-${address}`)
+        );
+        const commitment = keccak256(
+          encodePacked(
+            ["address", "address", "uint256", "uint8", "uint256", "bytes32"],
+            [
+              address,
+              GAME_HUB_ADDRESS as `0x${string}`,
+              BigInt(421614),
+              game,
+              BigInt(choice),
+              secret,
+            ]
+          )
+        );
 
-        // Send transaction
-        const txHash = await walletClient.writeContract({
+        // Commit transaction
+        const commitTx = await walletClient.writeContract({
           address: GAME_HUB_ADDRESS as `0x${string}`,
           abi: GAME_HUB_ABI,
-          functionName: "play",
-          args: [game, BigInt(choice)],
+          functionName: "commitPlay",
+          args: [game, commitment],
           value: betWei,
         });
 
         setStatus("processing");
 
-        // Wait for receipt
+        await publicClient.waitForTransactionReceipt({
+          hash: commitTx,
+        });
+
+        // Reveal transaction
+        const txHash = await walletClient.writeContract({
+          address: GAME_HUB_ADDRESS as `0x${string}`,
+          abi: GAME_HUB_ABI,
+          functionName: "revealPlay",
+          args: [BigInt(choice), secret],
+        });
+
         const receipt = await publicClient.waitForTransactionReceipt({
           hash: txHash,
         });
