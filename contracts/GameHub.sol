@@ -69,6 +69,10 @@ contract GameHub is VRFConsumerBaseV2Plus, ReentrancyGuard {
     uint16 public constant REQUEST_CONFIRMATIONS = 3;
 
     uint32 private constant NUM_WORDS = 1;
+    
+    /// @notice Emergency fallback mode: if enabled, games settle immediately
+    ///         using pseudo-randomness (less secure than VRF, but keeps game live).
+    bool public emergencyMode;
 
     // --- State ---------------------------------------------------------------
 
@@ -163,6 +167,12 @@ contract GameHub is VRFConsumerBaseV2Plus, ReentrancyGuard {
     function setVrfPaymentMode(bool _nativePayment) external onlyOwner {
         vrfNativePayment = _nativePayment;
     }
+    
+    /// @notice Enable/disable emergency settlement mode (non‑VRF randomness).
+    /// @dev For outages/misconfiguration only. VRF mode is strongly preferred.
+    function setEmergencyMode(bool _enabled) external onlyOwner {
+        emergencyMode = _enabled;
+    }
 
     function deposit() external payable onlyOwner {
         emit FundsDeposited(msg.sender, msg.value);
@@ -208,6 +218,20 @@ contract GameHub is VRFConsumerBaseV2Plus, ReentrancyGuard {
         }
         // WHEEL: choice is ignored
 
+        PendingGame memory p = PendingGame({
+            player:    msg.sender,
+            game:      game,
+            betAmount: msg.value,
+            choice:    choice
+        });
+        
+        // Emergency fallback: settle immediately without VRF request.
+        if (emergencyMode) {
+            _settleGame(p, _pseudoRandom(msg.sender, choice));
+            emit GameCommitted(msg.sender, game, msg.value, choice, 0);
+            return 0;
+        }
+        
         // Request randomness. The VRF coordinator verifies the result on-chain
         // with a zk proof before calling fulfillRandomWords, making it impossible
         // for any party — player, house, or sequencer — to predict or bias the outcome.
@@ -224,12 +248,7 @@ contract GameHub is VRFConsumerBaseV2Plus, ReentrancyGuard {
             })
         );
 
-        pendingGames[requestId] = PendingGame({
-            player:    msg.sender,
-            game:      game,
-            betAmount: msg.value,
-            choice:    choice
-        });
+        pendingGames[requestId] = p;
         activeRequest[msg.sender] = requestId;
 
         emit GameCommitted(msg.sender, game, msg.value, choice, requestId);
@@ -252,7 +271,10 @@ contract GameHub is VRFConsumerBaseV2Plus, ReentrancyGuard {
         delete pendingGames[requestId];
         delete activeRequest[p.player];
 
-        uint256 rand = randomWords[0];
+        _settleGame(p, randomWords[0]);
+    }
+    
+    function _settleGame(PendingGame memory p, uint256 rand) internal {
         uint256 result;
         uint256 payout;
         bool won;
@@ -305,6 +327,21 @@ contract GameHub is VRFConsumerBaseV2Plus, ReentrancyGuard {
         }
 
         emit GamePlayed(p.player, p.game, p.choice, result, won, payout, funRewarded);
+    }
+    
+    function _pseudoRandom(address player, uint256 choice) internal view returns (uint256) {
+        return uint256(
+            keccak256(
+                abi.encodePacked(
+                    block.prevrandao,
+                    block.timestamp,
+                    block.number,
+                    player,
+                    choice,
+                    address(this)
+                )
+            )
+        );
     }
 
     // --- View Helpers --------------------------------------------------------

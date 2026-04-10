@@ -1142,10 +1142,6 @@ async function doPlay(gi) {
       throw new Error("You already have an open bet — wait ~30 seconds for Chainlink to settle it, then try again.");
     }
 
-    // Preflight simulation to surface readable revert reasons before wallet signing.
-    // This catches most failures users see as "reverted while trying to sign".
-    await hub.commitPlay.staticCall(gi, ch, { value: wei });
-
     setSt(gi, "Sign transaction in wallet…");
 
     // Single tx — locks bet and triggers Chainlink VRF request
@@ -1228,6 +1224,7 @@ async function doPlay(gi) {
     if (msg.includes("InvalidConsumer")) msg = "Game config issue: this GameHub is not added as a VRF consumer.";
     if (msg.includes("InsufficientBalance")) msg = "Game config issue: VRF subscription has no LINK/native balance.";
     if (msg.includes("CALL_EXCEPTION") || msg.includes("execution reverted")) msg = "Transaction reverted during simulation. Most common cause: VRF subscription not funded or contract not added as consumer.";
+    if (msg.includes("missing revert data") || msg.includes("require(false)")) msg = "VRF request rejected by coordinator. Check subscription ID, consumer registration, and LINK balance.";
     if (msg.includes("limit exceeded") || msg.includes("too fast per second") || msg.includes("api.zan.top")) msg = "RPC rate-limited. Wait a few seconds, then try again.";
     document.getElementById(`err-${gi}`).innerHTML = `<div class="err-line">${esc(msg)}</div>`;
   } finally { btn.disabled = false; }
