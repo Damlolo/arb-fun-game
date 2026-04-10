@@ -1007,7 +1007,16 @@ async function doConnect(silent=false) {
       document.getElementById('net-warn').style.display = 'flex';
       try {
         await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x'+CHAIN_ID.toString(16)}]});
-      } catch(_){}
+      } catch(_) {
+        if (!silent) alert("Please switch to Arbitrum Sepolia to play the games.");
+        return;
+      }
+
+      const switchedNet = await provider.getNetwork();
+      if (Number(switchedNet.chainId) !== CHAIN_ID) {
+        if (!silent) alert("Wrong network. Open your wallet and switch to Arbitrum Sepolia.");
+        return;
+      }
     }
 
     hub = new ethers.Contract(HUB_ADDR, HUB_ABI, signer);
@@ -1128,6 +1137,11 @@ async function doPlay(gi) {
   const btn = document.getElementById(`pb-${gi}`); btn.disabled = true;
 
   try {
+    const activeReq = await hub.getActiveRequest(await signer.getAddress());
+    if (activeReq > 0n) {
+      throw new Error("You already have an open bet — wait ~30 seconds for Chainlink to settle it, then try again.");
+    }
+
     setSt(gi, "Sign transaction in wallet…");
 
     // Single tx — locks bet and triggers Chainlink VRF request
@@ -1203,9 +1217,14 @@ async function doPlay(gi) {
   } catch(e) {
     clearSt(gi);
     let msg = e.reason || e.shortMessage || e.message || "Transaction failed";
-    if (msg.includes("insufficient house") || msg.includes("CALL_EXCEPTION") || msg.includes("estimateGas")) msg = "House balance too low — try again later.";
+    if (msg.includes("insufficient house")) msg = "House balance too low — try again later.";
     if (msg.includes("rejected") || msg.includes("denied")) msg = "Transaction rejected.";
     if (msg.includes("pending game exists")) msg = "You have an open bet — wait ~30 seconds for Chainlink to settle it, then try again.";
+    if (msg.includes("InvalidSubscription")) msg = "Game config issue: VRF subscription ID is invalid. Ask the owner to redeploy or update subscription.";
+    if (msg.includes("InvalidConsumer")) msg = "Game config issue: this GameHub is not added as a VRF consumer.";
+    if (msg.includes("InsufficientBalance")) msg = "Game config issue: VRF subscription has no LINK/native balance.";
+    if (msg.includes("CALL_EXCEPTION") || msg.includes("execution reverted")) msg = "Transaction reverted during simulation. Most common cause: VRF subscription not funded or contract not added as consumer.";
+    if (msg.includes("missing revert data") || msg.includes("require(false)")) msg = "VRF request rejected by coordinator. Check subscription ID, consumer registration, and LINK balance.";
     if (msg.includes("limit exceeded") || msg.includes("too fast per second") || msg.includes("api.zan.top")) msg = "RPC rate-limited. Wait a few seconds, then try again.";
     document.getElementById(`err-${gi}`).innerHTML = `<div class="err-line">${esc(msg)}</div>`;
   } finally { btn.disabled = false; }
