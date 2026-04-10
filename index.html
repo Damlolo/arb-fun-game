@@ -862,8 +862,10 @@ const TOKEN_URL    = `https://sepolia.arbiscan.io/token/${FUN_ADDR}`;
 const EXPLORER_URL = `https://sepolia.arbiscan.io/address/${HUB_ADDR}`;
 
 const HUB_ABI = [
-  "function commitPlay(uint8 game, bytes32 commitment) external payable",
-  "function revealPlay(uint256 choice, bytes32 secret) external",
+  "function commitPlay(uint8 game, uint256 choice) external payable returns (uint256 requestId)",
+  "function getActiveRequest(address player) external view returns (uint256)",
+  "function houseBalance() external view returns (uint256)",
+  "event GameCommitted(address indexed player, uint8 indexed game, uint256 betAmount, uint256 choice, uint256 requestId)",
   "event GamePlayed(address indexed player, uint8 indexed game, uint256 choice, uint256 result, bool won, uint256 payout, uint256 funRewarded)",
 ];
 const FUN_ABI = [
@@ -1114,55 +1116,99 @@ function animateWheel(result) {
 }
 
 // ── Play ──────────────────────────────────────────────────────────────────────
+const VRF_POLL_MS    = 2000;
+const VRF_TIMEOUT_MS = 120_000; // 2 minutes
+
 async function doPlay(gi) {
   if (!connected) { alert("Connect wallet first."); return; }
-  const bet=document.getElementById(`bet-${gi}`).value;
-  const wei=ethers.parseEther(bet);
-  const ch=gi===0?coinPick:gi===1?dicePick:0;
-  ['st','res','err'].forEach(p=>{ document.getElementById(`${p}-${gi}`).innerHTML=''; });
-  const btn=document.getElementById(`pb-${gi}`); btn.disabled=true;
+  const bet = document.getElementById(`bet-${gi}`).value;
+  const wei  = ethers.parseEther(bet);
+  const ch   = gi === 0 ? coinPick : gi === 1 ? dicePick : 0;
+  ['st','res','err'].forEach(p => { document.getElementById(`${p}-${gi}`).innerHTML = ''; });
+  const btn = document.getElementById(`pb-${gi}`); btn.disabled = true;
+
   try {
-    setSt(gi,"Commit: sign in wallet…");
-    const secret = ethers.hexlify(ethers.randomBytes(32));
-    const commitment = ethers.solidityPackedKeccak256(
-      ['address','address','uint256','uint8','uint256','bytes32'],
-      [await signer.getAddress(), HUB_ADDR, CHAIN_ID, gi, ch, secret]
-    );
-    const commitTx=await hub.commitPlay(gi, commitment, { value: wei, gasLimit: 200000n });
-    setSt(gi,"Commit sent. Reveal next…",true);
-    const commitRx = await commitTx.wait();
-    const revealAt = Number(commitRx.blockNumber) + 1;
-    while (Number(await provider.getBlockNumber()) < revealAt) {
-      setSt(gi, "Waiting 1 block before reveal…", true);
-      await new Promise(r => setTimeout(r, 1200));
+    setSt(gi, "Sign transaction in wallet…");
+
+    // Single tx — locks bet and triggers Chainlink VRF request
+    const tx = await hub.commitPlay(gi, ch, { value: wei, gasLimit: 300000n });
+    setSt(gi, "Transaction sent. Waiting for Chainlink VRF…", true);
+    const rx = await tx.wait();
+
+    // Extract the VRF requestId from the GameCommitted event
+    const iface = new ethers.Interface(HUB_ABI);
+    let requestId = null;
+    for (const log of rx.logs) {
+      try {
+        const p = iface.parseLog(log);
+        if (p?.name === "GameCommitted") { requestId = p.args.requestId; break; }
+      } catch(_) {}
     }
 
-    setSt(gi,"Reveal: sign second tx…",true);
+    // Start animations while we wait for VRF callback
     let animP;
-    if(gi===0) animP=animateCoin();
-    else if(gi===1) animP=animateDice();
-    else animP=Promise.resolve();
-    const revealTx=await hub.revealPlay(ch, secret, { gasLimit: 250000n });
-    const rx=await revealTx.wait();
-    let out={won:false,result:0,payout:0n,funRewarded:0n};
-    const iface=new ethers.Interface(HUB_ABI);
-    for(const log of rx.logs){
-      try{ const p=iface.parseLog(log); if(p?.name==="GamePlayed") out={won:p.args.won,result:Number(p.args.result),payout:p.args.payout,funRewarded:p.args.funRewarded}; }catch(_){}
+    if (gi === 0)      animP = animateCoin();
+    else if (gi === 1) animP = animateDice();
+    else               animP = Promise.resolve();
+
+    // Poll for the GamePlayed event emitted by fulfillRandomWords()
+    setSt(gi, "Waiting for Chainlink to resolve outcome…", true);
+    const fromBlock = rx.blockNumber;
+    const myAddr    = (await signer.getAddress()).toLowerCase();
+    const deadline  = Date.now() + VRF_TIMEOUT_MS;
+    let   out       = null;
+
+    while (Date.now() < deadline) {
+      await new Promise(r => setTimeout(r, VRF_POLL_MS));
+      try {
+        const currentBlock = await provider.getBlockNumber();
+        const logs = await provider.getLogs({
+          address:   HUB_ADDR,
+          topics:    [ethers.id("GamePlayed(address,uint8,uint256,uint256,bool,uint256,uint256)")],
+          fromBlock: fromBlock,
+          toBlock:   currentBlock,
+        });
+        for (const log of logs) {
+          try {
+            const p = iface.parseLog(log);
+            if (p?.name === "GamePlayed" && p.args.player.toLowerCase() === myAddr) {
+              out = { won: p.args.won, result: Number(p.args.result), payout: p.args.payout, funRewarded: p.args.funRewarded };
+              break;
+            }
+          } catch(_) {}
+        }
+      } catch(_) {}
+      if (out) break;
     }
+
     await animP;
-    if(gi===0) showCoinResult(out.result);
-    else if(gi===1) showDiceResult(out.result);
-    else await animateWheel(out.result);
-    clearSt(gi); showRes(gi,out,bet,ch); updStats(out.won); addHist(gi,ch,out,bet);
+
+    if (!out) {
+      clearSt(gi);
+      document.getElementById(`err-${gi}`).innerHTML = `<div class="err-line">VRF timed out after 2 minutes. Your bet is safe — Chainlink will still settle it. Refresh the page to check your result.</div>`;
+      btn.disabled = false;
+      return;
+    }
+
+    if (gi === 0)      showCoinResult(out.result);
+    else if (gi === 1) showDiceResult(out.result);
+    else               await animateWheel(out.result);
+
+    clearSt(gi);
+    showRes(gi, out, bet, ch);
+    updStats(out.won);
+    addHist(gi, ch, out, bet);
     await refreshFun();
+
   } catch(e) {
     clearSt(gi);
-    let msg=e.reason||e.shortMessage||e.message||"Transaction failed";
-    if(msg.includes("insufficient house")||msg.includes("CALL_EXCEPTION")||msg.includes("estimateGas")) msg="House balance too low — try again later.";
-    if(msg.includes("rejected")||msg.includes("denied")) msg="Transaction rejected.";
-    if(msg.includes("limit exceeded")||msg.includes("too fast per second")||msg.includes("api.zan.top")) msg="RPC rate-limited by wallet/provider. Wait a few seconds, then try again.";
-    document.getElementById(`err-${gi}`).innerHTML=`<div class="err-line">${esc(msg)}</div>`;
-  } finally { btn.disabled=false; }
+    let msg = e.reason || e.shortMessage || e.message || "Transaction failed";
+    if (msg.includes("insufficient house") || msg.includes("CALL_EXCEPTION") || msg.includes("estimateGas")) msg = "House balance too low — try again later.";
+    if (msg.includes("rejected") || msg.includes("denied")) msg = "Transaction rejected.";
+    if (msg.includes("pending game exists")) msg = "You have an open bet — wait ~30 seconds for Chainlink to settle it, then try again.";
+    if (msg.includes("limit exceeded") || msg.includes("too fast per second") || msg.includes("api.zan.top")) msg = "RPC rate-limited. Wait a few seconds, then try again.";
+    document.getElementById(`err-${gi}`).innerHTML = `<div class="err-line">${esc(msg)}</div>`;
+  } finally { btn.disabled = false; }
 }
 
 function setSt(i,msg,spin=false) {
