@@ -59,6 +59,10 @@ contract GameHub is VRFConsumerBaseV2Plus, ReentrancyGuard {
     /// @notice Gas limit for the fulfillRandomWords callback.
     ///         200_000 is sufficient for all three game types.
     uint32 public callbackGasLimit = 200_000;
+    
+    /// @notice Whether VRF fees should be charged in native token (ETH) instead of LINK.
+    ///         Default is LINK billing because this deployment's VRF subscription is LINK-funded.
+    bool public vrfNativePayment = false;
 
     /// @notice Block confirmations before VRF responds.
     ///         3 is safe against reorgs on Arbitrum.
@@ -155,6 +159,11 @@ contract GameHub is VRFConsumerBaseV2Plus, ReentrancyGuard {
         callbackGasLimit = _callbackGasLimit;
     }
 
+    /// @notice Toggle VRF billing mode: native token (true) or LINK (false).
+    function setVrfPaymentMode(bool _nativePayment) external onlyOwner {
+        vrfNativePayment = _nativePayment;
+    }
+
     function deposit() external payable onlyOwner {
         emit FundsDeposited(msg.sender, msg.value);
     }
@@ -176,8 +185,10 @@ contract GameHub is VRFConsumerBaseV2Plus, ReentrancyGuard {
      * @param game    GameType enum value.
      * @param choice  COINFLIP: 0=heads 1=tails | DICE: 1-6 | WHEEL: any value.
      *
-     * NOTE: Your VRF subscription must be funded with LINK. The LINK fee is
-     *       deducted from the subscription, not from msg.value.
+     * NOTE: VRF fees are taken from the subscription according to
+     *       `vrfNativePayment`:
+     *       - true  => native token billing
+     *       - false => LINK billing
      */
     function commitPlay(GameType game, uint256 choice)
         external
@@ -208,7 +219,7 @@ contract GameHub is VRFConsumerBaseV2Plus, ReentrancyGuard {
                 callbackGasLimit:     callbackGasLimit,
                 numWords:             NUM_WORDS,
                 extraArgs:            VRFV2PlusClient._argsToBytes(
-                                          VRFV2PlusClient.ExtraArgsV1({ nativePayment: false })
+                                          VRFV2PlusClient.ExtraArgsV1({ nativePayment: vrfNativePayment })
                                       )
             })
         );
