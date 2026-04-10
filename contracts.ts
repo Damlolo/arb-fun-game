@@ -1,8 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  Contract addresses — update these after deployment
 // ─────────────────────────────────────────────────────────────────────────────
-export const GAME_HUB_ADDRESS = "0xF67dA5dE3b6c4D8675047eBf0DE71Dd9Ac96227C";
-export const FUN_TOKEN_ADDRESS = "0x92E79A3f212f6BD696a2ddB3da374e7776B4daaC";
+export const GAME_HUB_ADDRESS   = "0xD10a252c80521d090ECC74d13305c3Cc8d817082";
+export const FUN_TOKEN_ADDRESS  = "0x06e7836A655AaB61C214302DCE5e62dfA57805eD";
 
 export const ARBITRUM_SEPOLIA_CHAIN_ID = 421614;
 
@@ -10,14 +10,14 @@ export const ARBITRUM_SEPOLIA_CHAIN_ID = 421614;
 //  ABIs (minimal — only what the frontend needs)
 // ─────────────────────────────────────────────────────────────────────────────
 export const GAME_HUB_ABI = [
-  // play
+  // commitPlay — single tx to lock bet and trigger VRF
   {
     inputs: [
-      { internalType: "uint8", name: "game", type: "uint8" },
+      { internalType: "uint8",   name: "game",   type: "uint8"   },
       { internalType: "uint256", name: "choice", type: "uint256" },
     ],
-    name: "play",
-    outputs: [],
+    name: "commitPlay",
+    outputs: [{ internalType: "uint256", name: "requestId", type: "uint256" }],
     stateMutability: "payable",
     type: "function",
   },
@@ -44,16 +44,37 @@ export const GAME_HUB_ABI = [
     stateMutability: "view",
     type: "function",
   },
-  // events
+  // getActiveRequest — check if player has a pending VRF request
+  {
+    inputs: [{ internalType: "address", name: "player", type: "address" }],
+    name: "getActiveRequest",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  // GameCommitted event — emitted by commitPlay, contains requestId
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "address", name: "player", type: "address" },
-      { indexed: true, internalType: "uint8", name: "game", type: "uint8" },
-      { indexed: false, internalType: "uint256", name: "choice", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "result", type: "uint256" },
-      { indexed: false, internalType: "bool", name: "won", type: "bool" },
-      { indexed: false, internalType: "uint256", name: "payout", type: "uint256" },
+      { indexed: true,  internalType: "address", name: "player",    type: "address" },
+      { indexed: true,  internalType: "uint8",   name: "game",      type: "uint8"   },
+      { indexed: false, internalType: "uint256", name: "betAmount", type: "uint256" },
+      { indexed: false, internalType: "uint256", name: "choice",    type: "uint256" },
+      { indexed: false, internalType: "uint256", name: "requestId", type: "uint256" },
+    ],
+    name: "GameCommitted",
+    type: "event",
+  },
+  // GamePlayed event — emitted by fulfillRandomWords (Chainlink VRF callback)
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true,  internalType: "address", name: "player",      type: "address" },
+      { indexed: true,  internalType: "uint8",   name: "game",        type: "uint8"   },
+      { indexed: false, internalType: "uint256", name: "choice",      type: "uint256" },
+      { indexed: false, internalType: "uint256", name: "result",      type: "uint256" },
+      { indexed: false, internalType: "bool",    name: "won",         type: "bool"    },
+      { indexed: false, internalType: "uint256", name: "payout",      type: "uint256" },
       { indexed: false, internalType: "uint256", name: "funRewarded", type: "uint256" },
     ],
     name: "GamePlayed",
@@ -79,17 +100,17 @@ export const FUN_TOKEN_ABI = [
 ] as const;
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Uniswap swap link (update outputCurrency after deploying FunToken)
+//  Swap / liquidity links
 // ─────────────────────────────────────────────────────────────────────────────
 export const UNISWAP_SWAP_URL =
-  `https://app.camelot.exchange/?chain=arbitrumSepolia&token2=${0x92E79A3f212f6BD696a2ddB3da374e7776B4daaC}`;
+  `https://app.camelot.exchange/?chain=arbitrumSepolia&token2=${FUN_TOKEN_ADDRESS}`;
 
 export const UNISWAP_ADD_LIQUIDITY_URL =
-  `https://app.camelot.exchange/liquidity?chain=arbitrumSepolia&token1=ETH&token2=${0x92E79A3f212f6BD696a2ddB3da374e7776B4daaC}`;
+  `https://app.camelot.exchange/liquidity?chain=arbitrumSepolia&token1=ETH&token2=${FUN_TOKEN_ADDRESS}`;
 
 // Game type enum — must match Solidity
 export enum GameType {
   COINFLIP = 0,
-  DICE = 1,
-  WHEEL = 2,
+  DICE     = 1,
+  WHEEL    = 2,
 }
