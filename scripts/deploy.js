@@ -3,10 +3,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // ─── Chainlink VRF v2.5 — Arbitrum Sepolia ───────────────────────────────────
-// Source: https://docs.chain.link/vrf/v2-5/supported-networks (Arbitrum Sepolia)
-// and confirmed at vrf.chain.link when connected to Arbitrum Sepolia.
-const VRF_COORDINATOR   = "0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B";
-const VRF_KEY_HASH      = "0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae";
+// Source: docs.chain.link/vrf/v2-5/supported-networks → Arbitrum Sepolia Testnet
+const VRF_COORDINATOR   = "0x5CE8D5A2BC84beb22a398CCA51996F7930313D61";
+const VRF_KEY_HASH      = "0x1770bdc7eec7771f7ba4ffd640f34260d7f095b79c92d34a5b2551d6f6cfd2be";
 
 async function main() {
   if (!process.env.PRIVATE_KEY) {
